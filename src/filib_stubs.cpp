@@ -26,7 +26,8 @@ extern "C" {
 #include <caml/custom.h>
 }
 
-typedef filib::interval<double> interval;
+typedef filib::interval<double,filib::native_switched,filib::i_mode_extended>
+interval;
 
 #define EXPORT(f) extern "C" CAMLexport value filib_caml_ ## f
 
