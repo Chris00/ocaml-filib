@@ -170,7 +170,7 @@ BOOL_OP1(isEmpty)
     CAMLparam1(va);                             \
     CAMLreturn(copy_double(f(I_VAL(va))));      \
   }
-  
+
 FLOAT_OP1(mid)
 FLOAT_OP1(diam)
 FLOAT_OP1(relDiam)
@@ -187,7 +187,7 @@ FLOAT_OP1(mag)
     I_VAL(vo) = f(I_VAL(vi));                   \
     CAMLreturn(vo);                             \
   }
-  
+
 OP1(abs)
 OP1(acos)
 OP1(acosh)
@@ -217,28 +217,28 @@ OP1(tanh)
 #define FLOAT_OP2(f)                                    \
   EXPORT(f)(value vi1, value vi2)                       \
   {                                                     \
-    CAMLparam1(vi1, vi2);                               \
+    CAMLparam2(vi1, vi2);                               \
     CAMLreturn(copy_double(f(I_VAL(vi1), I_VAL(vi2)))); \
   }
 
-#define OP2(f, ty1, ty2)                        \
-  EXPORT(f)(value vi1, value vi2)               \
+#define OP2(name, f, ty1, ty2)                  \
+  EXPORT(name)(value vi1, value vi2)            \
   {                                             \
-    CAMLparam1(vi1, vi2);                       \
+    CAMLparam2(vi1, vi2);                       \
     CAMLlocal1(vo);                             \
     vo = I_ALLOC();                             \
-    I_VAL(vo) = f(ty1(vi1), ty2(vi2));          \
+    I_VAL(vo) = filib::f(ty1(vi1), ty2(vi2));   \
     CAMLreturn(vo);                             \
   }
 
-OP2(imin, I_VAL, I_VAL)
-OP2(imax, I_VAL, I_VAL)
+OP2(imin, imin, I_VAL, I_VAL)
+OP2(imax, imax, I_VAL, I_VAL)
 FLOAT_OP2(dist)
-OP2(blow, I_VAL, Double_val)
-OP2(intersect, I_VAL, I_VAL)
-OP2(hull, I_VAL, I_VAL)
-OP2(hull_float, Double_val, I_VAL)
-OP2(hull_float2, Double_val, Double_val)
+OP2(blow, blow, I_VAL, Double_val)
+OP2(intersect, intersect, I_VAL, I_VAL)
+OP2(hull,        hull, I_VAL, I_VAL)
+OP2(hull_float,  hull, Double_val, I_VAL)
+//OP2(hull_float2, hull, Double_val, Double_val)
 
 #define REL2(f, ty1, ty2)                       \
   EXPORT(f)(value vi1, value vi2)               \
@@ -254,3 +254,24 @@ REL2(proper_subset, I_VAL, I_VAL)
 REL2(subset, I_VAL, I_VAL)
 REL2(proper_superset, I_VAL, I_VAL)
 REL2(superset, I_VAL, I_VAL)
+
+REL2(seq, I_VAL, I_VAL)
+REL2(sne, I_VAL, I_VAL)
+REL2(sge, I_VAL, I_VAL)
+REL2(sgt, I_VAL, I_VAL)
+REL2(sle, I_VAL, I_VAL)
+REL2(slt, I_VAL, I_VAL)
+
+REL2(ceq, I_VAL, I_VAL)
+REL2(cne, I_VAL, I_VAL)
+REL2(cge, I_VAL, I_VAL)
+REL2(cgt, I_VAL, I_VAL)
+REL2(cle, I_VAL, I_VAL)
+REL2(clt, I_VAL, I_VAL)
+
+REL2(peq, I_VAL, I_VAL)
+REL2(pne, I_VAL, I_VAL)
+REL2(pge, I_VAL, I_VAL)
+REL2(pgt, I_VAL, I_VAL)
+REL2(ple, I_VAL, I_VAL)
+REL2(plt, I_VAL, I_VAL)

@@ -1,6 +1,6 @@
 OBJ = .o
 CXX = g++
-CXXFLAGS = -fPIC -frounding-math -O3
+CXXFLAGS = -fPIC -frounding-math -O3 -DFILIB_EXTENDED
 PKG_NAME = filib
 FILIB = ../../filib++
 # by default, filib compiles to a static lib which will be included in

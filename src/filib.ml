@@ -95,7 +95,7 @@ external dist : 'a t -> 'a t -> float = "filib_caml_dist"
 external blow : 'a t -> float -> rw t = "filib_caml_blow"
 external hull : 'a t -> 'a t -> rw t = "filib_caml_hull"
 external hull_float : float -> 'a t -> rw t = "filib_caml_hull_float"
-external hull_float2 : float -> float -> rw t = "filib_caml_hull_float2"
+(* external hull_float2 : float -> float -> rw t = "filib_caml_hull_float2" *)
 
 external disjoint : 'a t -> 'a t -> bool = "filib_caml_disjoint" "noalloc"
 external belongs : float -> 'a t -> bool = "filib_caml_in" "noalloc"
@@ -106,6 +106,28 @@ external subset : 'a t -> 'a t -> bool = "filib_caml_subset" "noalloc"
 external proper_superset : 'a t -> 'a t -> bool = "filib_caml_proper_superset"
   "noalloc"
 external superset : 'a t -> 'a t -> bool = "filib_caml_superset" "noalloc"
+
+external seq : 'a t -> 'a t -> bool = "filib_caml_seq"
+external sne : 'a t -> 'a t -> bool = "filib_caml_sne"
+external sge : 'a t -> 'a t -> bool = "filib_caml_sge"
+external sgt : 'a t -> 'a t -> bool = "filib_caml_sgt"
+external sle : 'a t -> 'a t -> bool = "filib_caml_sle"
+external slt : 'a t -> 'a t -> bool = "filib_caml_slt"
+
+external ceq : 'a t -> 'a t -> bool = "filib_caml_ceq"
+external cne : 'a t -> 'a t -> bool = "filib_caml_cne"
+external cge : 'a t -> 'a t -> bool = "filib_caml_cge"
+external cgt : 'a t -> 'a t -> bool = "filib_caml_cgt"
+external cle : 'a t -> 'a t -> bool = "filib_caml_cle"
+external clt : 'a t -> 'a t -> bool = "filib_caml_clt"
+
+external peq : 'a t -> 'a t -> bool = "filib_caml_peq"
+external pne : 'a t -> 'a t -> bool = "filib_caml_pne"
+external pge : 'a t -> 'a t -> bool = "filib_caml_pge"
+external pgt : 'a t -> 'a t -> bool = "filib_caml_pgt"
+external ple : 'a t -> 'a t -> bool = "filib_caml_ple"
+external plt : 'a t -> 'a t -> bool = "filib_caml_plt"
+
 
 module Do =
 struct
