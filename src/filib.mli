@@ -58,6 +58,83 @@ val to_string : 'a t -> string
 
 val print : Format.formatter -> 'a t -> unit
 
+external is_point : 'a t -> bool = "filib_caml_isPoint" "noalloc"
+(** [is_point i] returns true, iff [i] is a point interval. *)
+
+external is_empty : 'a t -> bool = "filib_caml_isEmpty" "noalloc"
+
+external is_infinite : 'a t -> bool = "filib_caml_isInfinite" "noalloc"
+
+external mid : 'a t -> float = "filib_caml_mid"
+(** [mif i] returns an approximation of the midpoint of [i], that is
+    contained in [i].  The following cases are distinguished:
+    {[
+    mid i = NaN   if i = ∅
+            0.    if i = ]-∞, ∞[
+            infinity     if i = [a, +∞[
+            neg_infinity if i = ]-∞, a]
+    ]} *)
+
+val diam : 'a t -> float
+(** Returns the diameter or width of the interval (upwardly rounded). *)
+
+val rel_diam : 'a t -> float
+(** [rel_diam i] returns an upper bound for the relative diameter of
+    [i]: [rel_diam i = diam i] if [mig i] is less than the smallest
+    positive normalized floating-point number, [rel_diam i = diam i /.
+    mig i] otherwise.  The following cases are also distinguished:
+    {[
+    rel_diam i = NaN if i = ∅
+                 infinity   if is_infinite i
+    ]} *)
+
+val rad : 'a t -> float
+(** [rad i] returns the radius of [i] (upwardly rounded).  The
+    following cases are considered:
+    {[
+    rad i = NaN   if i = ∅
+            infinity     if is_infinite i
+    ]}  *)
+
+external mig : 'a t -> float = "filib_caml_mig"
+(** [mig i] returns the mignitude, i.e. [mig i = min{abs(t) | t ∈ i}].
+    If [i = ∅], [mig i = NaN]. *)
+external mag : 'a t -> float = "filib_caml_mag"
+(** [mag i] returns the magnitude, the absolute value of [i]; also
+    [mag i = max{abs(t) | t ∈ i }].  If [i = ∅], then [mag i = NaN].
+    If [is_infinite i], then [mag i = infinite]. *)
+
+external abs : 'a t -> rw t = "filib_caml_abs"
+(** [abs i] returns the interval of all absolute values (moduli) of
+    [i]: [abs i = [mig i, mag i]].  The following cases are considered:
+    - [abs i = ∅] if [i = ∅];
+    - [abs i = [mig i, infinite]] if [is_infinite i] and one bound is finite
+    - [abs i = [M, infinite]] if both bounds are infinite. *)
+
+external acos : 'a t -> rw t = "filib_caml_acos"
+external acosh : 'a t -> rw t = "filib_caml_acosh"
+external acoth : 'a t -> rw t = "filib_caml_acoth"
+external asin : 'a t -> rw t = "filib_caml_asin"
+external atan : 'a t -> rw t = "filib_caml_atan"
+external atanh : 'a t -> rw t = "filib_caml_atanh"
+external cos : 'a t -> rw t = "filib_caml_cos"
+external cosh : 'a t -> rw t = "filib_caml_cosh"
+external cot : 'a t -> rw t = "filib_caml_cot"
+external coth : 'a t -> rw t = "filib_caml_coth"
+external exp : 'a t -> rw t = "filib_caml_exp"
+external exp10 : 'a t -> rw t = "filib_caml_exp10"
+external exp2 : 'a t -> rw t = "filib_caml_exp2"
+external expm1 : 'a t -> rw t = "filib_caml_expm1"
+external log : 'a t -> rw t = "filib_caml_log"
+external log10 : 'a t -> rw t = "filib_caml_log10"
+external log1p : 'a t -> rw t = "filib_caml_log1p"
+external log2 : 'a t -> rw t = "filib_caml_log2"
+external sin : 'a t -> rw t = "filib_caml_sin"
+external sinh : 'a t -> rw t = "filib_caml_sinh"
+external sqr : 'a t -> rw t = "filib_caml_sqr"
+external sqrt : 'a t -> rw t = "filib_caml_sqrt"
+external tan : 'a t -> rw t = "filib_caml_tan"
+external tanh : 'a t -> rw t = "filib_caml_tanh"
 
 
 module Do :

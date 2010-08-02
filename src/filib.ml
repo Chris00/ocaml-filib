@@ -52,7 +52,42 @@ let to_string i =
 let print fmt i =
   Format.fprintf fmt "[%.16e, %.16e]" (inf i) (sup i)
 
+external is_point : 'a t -> bool = "filib_caml_isPoint" "noalloc"
+external is_empty : 'a t -> bool = "filib_caml_isEmpty" "noalloc"
+external is_infinite : 'a t -> bool = "filib_caml_isInfinite" "noalloc"
 
+external mid : 'a t -> float = "filib_caml_mid"
+external diam : 'a t -> float = "filib_caml_diam"
+external rel_diam : 'a t -> float = "filib_caml_relDiam"
+external rad : 'a t -> float = "filib_caml_rad"
+external mig : 'a t -> float = "filib_caml_mig"
+external mag : 'a t -> float = "filib_caml_mag"
+
+external abs : 'a t -> rw t = "filib_caml_abs"
+external acos : 'a t -> rw t = "filib_caml_acos"
+external acosh : 'a t -> rw t = "filib_caml_acosh"
+external acoth : 'a t -> rw t = "filib_caml_acoth"
+external asin : 'a t -> rw t = "filib_caml_asin"
+external atan : 'a t -> rw t = "filib_caml_atan"
+external atanh : 'a t -> rw t = "filib_caml_atanh"
+external cos : 'a t -> rw t = "filib_caml_cos"
+external cosh : 'a t -> rw t = "filib_caml_cosh"
+external cot : 'a t -> rw t = "filib_caml_cot"
+external coth : 'a t -> rw t = "filib_caml_coth"
+external exp : 'a t -> rw t = "filib_caml_exp"
+external exp10 : 'a t -> rw t = "filib_caml_exp10"
+external exp2 : 'a t -> rw t = "filib_caml_exp2"
+external expm1 : 'a t -> rw t = "filib_caml_expm1"
+external log : 'a t -> rw t = "filib_caml_log"
+external log10 : 'a t -> rw t = "filib_caml_log10"
+external log1p : 'a t -> rw t = "filib_caml_log1p"
+external log2 : 'a t -> rw t = "filib_caml_log2"
+external sin : 'a t -> rw t = "filib_caml_sin"
+external sinh : 'a t -> rw t = "filib_caml_sinh"
+external sqr : 'a t -> rw t = "filib_caml_sqr"
+external sqrt : 'a t -> rw t = "filib_caml_sqrt"
+external tan : 'a t -> rw t = "filib_caml_tan"
+external tanh : 'a t -> rw t = "filib_caml_tanh"
 
 module Do =
 struct

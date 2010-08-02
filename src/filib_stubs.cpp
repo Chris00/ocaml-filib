@@ -152,3 +152,65 @@ EXPORT(do_div_float)(value va, value vb)
   I_VAL(va) /= Double_val(vb);
   return(Val_unit);
 }
+
+#define BOOL_OP1(f)                             \
+  EXPORT(f)(value vi)                           \
+  {                                             \
+    /* noalloc */                               \
+    return(Val_bool(f(I_VAL(vi))));             \
+  }
+
+BOOL_OP1(isPoint)
+BOOL_OP1(isInfinite)
+BOOL_OP1(isEmpty)
+
+#define FLOAT_OP1(f)                            \
+  EXPORT(f)(value va)                           \
+  {                                             \
+    CAMLparam1(va);                             \
+    CAMLreturn(copy_double(f(I_VAL(va))));      \
+  }
+  
+FLOAT_OP1(mid)
+FLOAT_OP1(diam)
+FLOAT_OP1(relDiam)
+FLOAT_OP1(rad)
+FLOAT_OP1(mig)
+FLOAT_OP1(mag)
+
+#define OP1(f)                                  \
+  EXPORT(f)(value vi)                           \
+  {                                             \
+    CAMLparam1(vi);                             \
+    CAMLlocal1(vo);                             \
+    vo = I_ALLOC();                             \
+    I_VAL(vo) = f(I_VAL(vi));                   \
+    CAMLreturn(vo);                             \
+  }
+  
+OP1(abs)
+OP1(acos)
+OP1(acosh)
+OP1(acoth)
+OP1(asin)
+OP1(atan)
+OP1(atanh)
+OP1(cos)
+OP1(cosh)
+OP1(cot)
+OP1(coth)
+OP1(exp)
+OP1(exp10)
+OP1(exp2)
+OP1(expm1)
+OP1(log)
+OP1(log10)
+OP1(log1p)
+OP1(log2)
+OP1(sin)
+OP1(sinh)
+OP1(sqr)
+OP1(sqrt)
+OP1(tan)
+OP1(tanh)
+
