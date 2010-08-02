@@ -24,7 +24,7 @@ let eval_phrase s =
   Toploop.execute_phrase print_outcome error_fmt phrase
 
 let () =
-  let success = eval_phrase "#install_printer Filib.print;;" in
+  let success = eval_phrase "#install_printer Filib.pretty_print;;" in
   if not success then (
     Format.fprintf error_fmt
       "Something weird appened while installing Filib library printer";

@@ -50,7 +50,10 @@ let to_string i =
   Printf.sprintf "[%.16e, %.16e]" (inf i) (sup i)
 
 let print fmt i =
-  Format.fprintf fmt "[%.16e, %.16e]" (inf i) (sup i)
+  Printf.fprintf fmt "[%.16e, %.16e]" (inf i) (sup i)
+
+let pretty_print fmt i =
+  Format.fprintf fmt "[%.16e, %.16e]@," (inf i) (sup i)
 
 external is_point : 'a t -> bool = "filib_caml_isPoint" "noalloc"
 external is_empty : 'a t -> bool = "filib_caml_isEmpty" "noalloc"

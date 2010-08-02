@@ -56,7 +56,8 @@ val is_empty : 'a t -> bool
 
 val to_string : 'a t -> string
 
-val print : Format.formatter -> 'a t -> unit
+val print : out_channel -> 'a t -> unit
+val pretty_print : Format.formatter -> 'a t -> unit
 
 
 (** {2 Access and Information} *)
