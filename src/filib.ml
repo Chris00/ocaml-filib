@@ -50,10 +50,18 @@ let to_string i =
   Printf.sprintf "[%.16e, %.16e]" (inf i) (sup i)
 
 let print fmt i =
-  Printf.fprintf fmt "[%.16e, %.16e]" (inf i) (sup i)
+  let inf_i = inf i and sup_i = sup i in
+  if is_nan inf_i && is_nan sup_i then
+    Printf.fprintf fmt "[ empty ]"
+  else
+    Printf.fprintf fmt "[%.16g, %.16g]" inf_i sup_i
 
 let pretty_print fmt i =
-  Format.fprintf fmt "[%.16e, %.16e]@," (inf i) (sup i)
+  let inf_i = inf i and sup_i = sup i in
+  if is_nan inf_i && is_nan sup_i then
+    Format.fprintf fmt "[ empty ]"
+  else
+    Format.fprintf fmt "[%g, %g]@," inf_i sup_i
 
 external is_point : 'a t -> bool = "filib_caml_isPoint" "noalloc"
 external is_empty : 'a t -> bool = "filib_caml_isEmpty" "noalloc"
