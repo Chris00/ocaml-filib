@@ -38,7 +38,7 @@ interval;
 
 static void caml_filib_finalize(value v)
 {
-  delete(I_PTR(v));
+//  delete(I_PTR(v));
 }
 
 static struct custom_operations caml_filib_ops = {
@@ -154,6 +154,21 @@ EXPORT(do_div_float)(value va, value vb)
   return(Val_unit);
 }
 
+#define ARITH(name, op)                         \
+  EXPORT(name)(value vi1, value vi2)            \
+  {                                             \
+    CAMLparam2(vi1, vi2);                       \
+    CAMLlocal1(vo);                             \
+    vo = I_ALLOC();                             \
+    I_VAL(vo) = I_VAL(vi1) op I_VAL(vi2);       \
+    CAMLreturn(vo);                             \
+  }
+
+ARITH(add, + )
+ARITH(sub, - )
+ARITH(mul, * )
+ARITH(div, / )
+
 #define BOOL_OP1(f)                             \
   EXPORT(f)(value vi)                           \
   {                                             \
@@ -187,7 +202,14 @@ FLOAT_OP1(mag)
     vo = I_ALLOC();                             \
     I_VAL(vo) = f(I_VAL(vi));                   \
     CAMLreturn(vo);                             \
+  }                                             \
+  EXPORT(do_ ## f)(value vo, value vi)          \
+  {                                             \
+    /* noalloc */                               \
+    I_VAL(vo) = f(I_VAL(vi));                   \
+    return(Val_unit);                           \
   }
+
 
 OP1(abs)
 OP1(acos)

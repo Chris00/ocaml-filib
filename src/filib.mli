@@ -109,6 +109,14 @@ external mag : 'a t -> float = "filib_caml_mag"
     If [is_infinite i], then [mag i = infinite]. *)
 
 
+(** {2 Arithmetic operations} *)
+
+external add : 'a t -> 'a t -> rw t = "filib_caml_add"
+external sub : 'a t -> 'a t -> rw t = "filib_caml_sub"
+external mul : 'a t -> 'a t -> rw t = "filib_caml_mul"
+external div : 'a t -> 'a t -> rw t = "filib_caml_div"
+
+
 (** {2 Elementary functions} *)
 
 external abs : 'a t -> rw t = "filib_caml_abs"
@@ -258,4 +266,33 @@ sig
     = "filib_caml_do_mul_float" "noalloc"
   external div_float : rw t -> float -> unit
     = "filib_caml_do_div_float" "noalloc"
+
+  external abs : rw t -> 'a t -> unit = "filib_caml_do_abs" "noalloc"
+  (** [abs y x] puts the result of {!Filib.abs}[x] in [y].  This
+      version is more efficient than {!Filib.abs} because no new
+      variable is allocated. *)
+  external acos : rw t -> 'a t -> unit = "filib_caml_do_acos" "noalloc"
+  external acosh : rw t -> 'a t -> unit = "filib_caml_do_acosh" "noalloc"
+  external acoth : rw t -> 'a t -> unit = "filib_caml_do_acoth" "noalloc"
+  external asin : rw t -> 'a t -> unit = "filib_caml_do_asin" "noalloc"
+  external atan : rw t -> 'a t -> unit = "filib_caml_do_atan" "noalloc"
+  external atanh : rw t -> 'a t -> unit = "filib_caml_do_atanh" "noalloc"
+  external cos : rw t -> 'a t -> unit = "filib_caml_do_cos" "noalloc"
+  external cosh : rw t -> 'a t -> unit = "filib_caml_do_cosh" "noalloc"
+  external cot : rw t -> 'a t -> unit = "filib_caml_do_cot" "noalloc"
+  external coth : rw t -> 'a t -> unit = "filib_caml_do_coth" "noalloc"
+  external exp : rw t -> 'a t -> unit = "filib_caml_do_exp" "noalloc"
+  external exp10 : rw t -> 'a t -> unit = "filib_caml_do_exp10" "noalloc"
+  external exp2 : rw t -> 'a t -> unit = "filib_caml_do_exp2" "noalloc"
+  external expm1 : rw t -> 'a t -> unit = "filib_caml_do_expm1" "noalloc"
+  external log : rw t -> 'a t -> unit = "filib_caml_do_log" "noalloc"
+  external log10 : rw t -> 'a t -> unit = "filib_caml_do_log10" "noalloc"
+  external log1p : rw t -> 'a t -> unit = "filib_caml_do_log1p" "noalloc"
+  external log2 : rw t -> 'a t -> unit = "filib_caml_do_log2" "noalloc"
+  external sin : rw t -> 'a t -> unit = "filib_caml_do_sin" "noalloc"
+  external sinh : rw t -> 'a t -> unit = "filib_caml_do_sinh" "noalloc"
+  external sqr : rw t -> 'a t -> unit = "filib_caml_do_sqr" "noalloc"
+  external sqrt : rw t -> 'a t -> unit = "filib_caml_do_sqrt" "noalloc"
+  external tan : rw t -> 'a t -> unit = "filib_caml_do_tan" "noalloc"
+  external tanh : rw t -> 'a t -> unit = "filib_caml_do_tanh" "noalloc"
 end
