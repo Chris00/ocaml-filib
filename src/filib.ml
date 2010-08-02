@@ -89,6 +89,24 @@ external sqrt : 'a t -> rw t = "filib_caml_sqrt"
 external tan : 'a t -> rw t = "filib_caml_tan"
 external tanh : 'a t -> rw t = "filib_caml_tanh"
 
+external min : 'a t -> 'a t -> rw t = "filib_caml_imin"
+external max : 'a t -> 'a t -> rw t = "filib_caml_imax"
+external dist : 'a t -> 'a t -> float = "filib_caml_dist"
+external blow : 'a t -> float -> rw t = "filib_caml_blow"
+external hull : 'a t -> 'a t -> rw t = "filib_caml_hull"
+external hull_float : float -> 'a t -> rw t = "filib_caml_hull_float"
+external hull_float2 : float -> float -> rw t = "filib_caml_hull_float2"
+
+external disjoint : 'a t -> 'a t -> bool = "filib_caml_disjoint" "noalloc"
+external belongs : float -> 'a t -> bool = "filib_caml_in" "noalloc"
+external interior : 'a t -> 'a t -> bool = "filib_caml_interior" "noalloc"
+external proper_subset : 'a t -> 'a t -> bool = "filib_caml_proper_subset"
+  "noalloc"
+external subset : 'a t -> 'a t -> bool = "filib_caml_subset" "noalloc"
+external proper_superset : 'a t -> 'a t -> bool = "filib_caml_proper_superset"
+  "noalloc"
+external superset : 'a t -> 'a t -> bool = "filib_caml_superset" "noalloc"
+
 module Do =
 struct
 

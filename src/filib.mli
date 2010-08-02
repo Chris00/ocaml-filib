@@ -58,6 +58,9 @@ val to_string : 'a t -> string
 
 val print : Format.formatter -> 'a t -> unit
 
+
+(** {2 Access and Information} *)
+
 external is_point : 'a t -> bool = "filib_caml_isPoint" "noalloc"
 (** [is_point i] returns true, iff [i] is a point interval. *)
 
@@ -104,12 +107,15 @@ external mag : 'a t -> float = "filib_caml_mag"
     [mag i = max{abs(t) | t ∈ i }].  If [i = ∅], then [mag i = NaN].
     If [is_infinite i], then [mag i = infinite]. *)
 
+
+(** {2 Elementary functions} *)
+
 external abs : 'a t -> rw t = "filib_caml_abs"
 (** [abs i] returns the interval of all absolute values (moduli) of
     [i]: [abs i = [mig i, mag i]].  The following cases are considered:
     - [abs i = ∅] if [i = ∅];
-    - [abs i = [mig i, infinite]] if [is_infinite i] and one bound is finite
-    - [abs i = [M, infinite]] if both bounds are infinite. *)
+    - [abs i = [mig i, infinity]] if [is_infinite i] and one bound is finite
+    - [abs i = [M, infinity]] if both bounds are infinite. *)
 
 external acos : 'a t -> rw t = "filib_caml_acos"
 external acosh : 'a t -> rw t = "filib_caml_acosh"
@@ -135,6 +141,56 @@ external sqr : 'a t -> rw t = "filib_caml_sqr"
 external sqrt : 'a t -> rw t = "filib_caml_sqrt"
 external tan : 'a t -> rw t = "filib_caml_tan"
 external tanh : 'a t -> rw t = "filib_caml_tanh"
+
+(** {2 Set Theoretic functions} *)
+
+external min : 'a t -> 'a t -> rw t = "filib_caml_imin"
+(** [min a b] returns an enclosure of the interval of all minima of
+    [a] and [b], i.e. [min a b = {min{x,y} | x ∈ a, y ∈ b }].  In
+    particular [min a b = ∅] if [a = ∅] or [b = ∅]. *)
+
+external max : 'a t -> 'a t -> rw t = "filib_caml_imax"
+(** [max a b] returns an enclosure of the interval of all maxima of
+    [a] and [b], i.e. [max a b = {max{x,y} | x ∈ a, y ∈ b }].  In
+    particular [max a b = ∅] if [a = ∅] or [b = ∅]. *)
+
+external dist : 'a t -> 'a t -> float = "filib_caml_dist"
+(** [dist a b] returns an upper bound of the Hausdorff-distance of [a]
+    and [b], i.e. [dist a b = max{ abs(inf(a) - inf(b)), abs(sup(a) -
+    sup(b)) }].  [dist a b = NaN] when [a = ∅] or [b = ∅]. *)
+
+external blow : 'a t -> float -> rw t = "filib_caml_blow"
+(** [blow a] return the ε-inflation: [blow a = (1 + eps) · a - eps · a]. *)
+
+external hull : 'a t -> 'a t -> rw t = "filib_caml_hull"
+(** [hull a b] the interval hull of [a] and [b]. *)
+
+external disjoint : 'a t -> 'a t -> bool = "filib_caml_disjoint"
+(** [disjoint a b] returns [true], iff [a] and [b] are disjoint,
+    i.e. [intersect a b = ∅]. *)
+
+external belongs : float -> 'a t -> bool = "filib_caml_in"
+(** [belongs x a] returns [true] iff [x ∈ a]. *)
+
+external interior : 'a t -> 'a t -> bool = "filib_caml_interior" "noalloc"
+(** [interior a b] returns [true], iff [a] is contained in the
+    interior of [b]. *)
+
+external proper_subset : 'a t -> 'a t -> bool = "filib_caml_proper_subset"
+  "noalloc"
+(** [proper_subset a b] returns [true], iff [a] is a proper subset of [b]. *)
+
+external subset : 'a t -> 'a t -> bool = "filib_caml_subset" "noalloc"
+(** [subset a b] returns [true], iff [a] is a subset of [b]. *)
+
+external proper_superset : 'a t -> 'a t -> bool = "filib_caml_proper_superset"
+  "noalloc"
+(** [proper_superset a b] returns [true], iff [a] is a proper superset
+    of [b]. *)
+
+external superset : 'a t -> 'a t -> bool = "filib_caml_superset" "noalloc"
+(** [superset a b] returns [true], iff [a] is a superset of [b]. *)
+
 
 
 module Do :

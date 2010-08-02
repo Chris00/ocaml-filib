@@ -214,3 +214,43 @@ OP1(sqrt)
 OP1(tan)
 OP1(tanh)
 
+#define FLOAT_OP2(f)                                    \
+  EXPORT(f)(value vi1, value vi2)                       \
+  {                                                     \
+    CAMLparam1(vi1, vi2);                               \
+    CAMLreturn(copy_double(f(I_VAL(vi1), I_VAL(vi2)))); \
+  }
+
+#define OP2(f, ty1, ty2)                        \
+  EXPORT(f)(value vi1, value vi2)               \
+  {                                             \
+    CAMLparam1(vi1, vi2);                       \
+    CAMLlocal1(vo);                             \
+    vo = I_ALLOC();                             \
+    I_VAL(vo) = f(ty1(vi1), ty2(vi2));          \
+    CAMLreturn(vo);                             \
+  }
+
+OP2(imin, I_VAL, I_VAL)
+OP2(imax, I_VAL, I_VAL)
+FLOAT_OP2(dist)
+OP2(blow, I_VAL, Double_val)
+OP2(intersect, I_VAL, I_VAL)
+OP2(hull, I_VAL, I_VAL)
+OP2(hull_float, Double_val, I_VAL)
+OP2(hull_float2, Double_val, Double_val)
+
+#define REL2(f, ty1, ty2)                       \
+  EXPORT(f)(value vi1, value vi2)               \
+  {                                             \
+    /* noalloc */                               \
+    return Val_bool(f(ty1(vi1), ty2(vi2)));     \
+  }
+
+REL2(disjoint, I_VAL, I_VAL)
+REL2(in, Double_val, I_VAL)
+REL2(interior, I_VAL, I_VAL)
+REL2(proper_subset, I_VAL, I_VAL)
+REL2(subset, I_VAL, I_VAL)
+REL2(proper_superset, I_VAL, I_VAL)
+REL2(superset, I_VAL, I_VAL)
