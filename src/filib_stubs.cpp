@@ -34,7 +34,7 @@ interval;
 #define I_PTR(v) ((interval *) Data_custom_val(v))
 #define I_VAL(v) (* (I_PTR(v)))
 
-#define I_ALLOC() alloc_custom(&caml_filib_ops, sizeof(interval), 1, 100)
+#define I_ALLOC() alloc_custom(&caml_filib_ops, sizeof(interval), 1, 300000)
 
 static void caml_filib_finalize(value v)
 {
