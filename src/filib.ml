@@ -157,10 +157,16 @@ struct
     = "filib_caml_do_add_float" "noalloc"
   external sub_float : rw t -> float -> unit
     = "filib_caml_do_sub_float" "noalloc"
+  external float_sub : rw t -> float -> unit
+    = "filib_caml_do_float_sub" "noalloc"
+  (** [float_sub y x] does [y <- x - y]. *)
   external mul_float : rw t -> float -> unit
     = "filib_caml_do_mul_float" "noalloc"
   external div_float : rw t -> float -> unit
     = "filib_caml_do_div_float" "noalloc"
+  external float_div : rw t -> float -> unit
+    = "filib_caml_do_float_div" "noalloc"
+  (** [float_div y x] performs [y <- x / y]. *)
 
   external abs : rw t -> 'a t -> unit = "filib_caml_do_abs" "noalloc"
   external acos : rw t -> 'a t -> unit = "filib_caml_do_acos" "noalloc"

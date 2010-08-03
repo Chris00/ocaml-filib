@@ -140,6 +140,13 @@ EXPORT(do_sub_float)(value va, value vb)
   return(Val_unit);
 }
 
+EXPORT(do_float_sub)(value va, value vb)
+{
+  /* noalloc */
+  I_VAL(va) = Double_val(vb) - I_VAL(va);
+  return(Val_unit);
+}
+
 EXPORT(do_mul_float)(value va, value vb)
 {
   /* noalloc */
@@ -151,6 +158,13 @@ EXPORT(do_div_float)(value va, value vb)
 {
   /* noalloc */
   I_VAL(va) /= Double_val(vb);
+  return(Val_unit);
+}
+
+EXPORT(do_float_div)(value va, value vb)
+{
+  /* noalloc */
+  I_VAL(va) = Double_val(vb) / I_VAL(va);
   return(Val_unit);
 }
 
