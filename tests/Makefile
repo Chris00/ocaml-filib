@@ -1,6 +1,6 @@
 SRC = ../src
 PA_DO = $(shell ocamlfind query pa_do)/pa_do.cmo
-#PP = camlp4o $(PA_DO) $(SRC)/pa_filib.cmo
+PP = camlp4o $(PA_DO) $(SRC)/pa_filib.cmo
 SOURCES = $(wildcard *.ml)
 OCAMLOPT_FLAGS += -verbose
 

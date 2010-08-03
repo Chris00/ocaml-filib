@@ -196,7 +196,6 @@ struct
 
   external min : rw t -> 'a t -> 'a t -> unit = "filib_caml_do_imin" "noalloc"
   external max : rw t -> 'a t -> 'a t -> unit = "filib_caml_do_imax" "noalloc"
-  external dist : rw t -> 'a t -> 'a t -> float = "filib_caml_do_dist" "noalloc"
   external blow : rw t -> 'a t -> float -> unit = "filib_caml_do_blow" "noalloc"
   external hull : rw t -> 'a t -> 'a t -> unit = "filib_caml_do_hull" "noalloc"
   external hull_float : rw t -> float -> 'a t -> unit = "filib_caml_do_hull_float"
