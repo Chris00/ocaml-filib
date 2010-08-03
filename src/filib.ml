@@ -42,29 +42,21 @@ external copy : 'a t -> rw t = "filib_caml_copy"
 external inf : 'a t -> float = "filib_caml_inf"
 external sup : 'a t -> float = "filib_caml_sup"
 
-let is_nan (x: float) = (x <> x)
-
-let is_empty i = is_nan(inf(i)) && is_nan(sup(i))
+external is_empty : 'a t -> bool = "filib_caml_isEmpty" "noalloc"
 
 let to_string i =
-  Printf.sprintf "[%.16e, %.16e]" (inf i) (sup i)
+  if is_empty i then "[ empty ]"
+  else Printf.sprintf "[%.16g, %.16g]" (inf i) (sup i)
 
 let print fmt i =
-  let inf_i = inf i and sup_i = sup i in
-  if is_nan inf_i && is_nan sup_i then
-    Printf.fprintf fmt "[ empty ]"
-  else
-    Printf.fprintf fmt "[%.16g, %.16g]" inf_i sup_i
+  if is_empty i then Printf.fprintf fmt "[ empty ]"
+  else Printf.fprintf fmt "[%.16g, %.16g]" (inf i) (sup i)
 
 let pretty_print fmt i =
-  let inf_i = inf i and sup_i = sup i in
-  if is_nan inf_i && is_nan sup_i then
-    Format.fprintf fmt "[ empty ]"
-  else
-    Format.fprintf fmt "[%g, %g]@," inf_i sup_i
+  if is_empty i then Format.fprintf fmt "[ empty ]"
+  else  Format.fprintf fmt "[%g, %g]@," (inf i) (sup i)
 
 external is_point : 'a t -> bool = "filib_caml_isPoint" "noalloc"
-external is_empty : 'a t -> bool = "filib_caml_isEmpty" "noalloc"
 external is_infinite : 'a t -> bool = "filib_caml_isInfinite" "noalloc"
 
 external mid : 'a t -> float = "filib_caml_mid"
@@ -84,6 +76,7 @@ external acos : 'a t -> rw t = "filib_caml_acos"
 external acosh : 'a t -> rw t = "filib_caml_acosh"
 external acoth : 'a t -> rw t = "filib_caml_acoth"
 external asin : 'a t -> rw t = "filib_caml_asin"
+external asinh : 'a t -> rw t = "filib_caml_asinh"
 external atan : 'a t -> rw t = "filib_caml_atan"
 external atanh : 'a t -> rw t = "filib_caml_atanh"
 external cos : 'a t -> rw t = "filib_caml_cos"
@@ -173,6 +166,7 @@ struct
   external acosh : rw t -> 'a t -> unit = "filib_caml_do_acosh" "noalloc"
   external acoth : rw t -> 'a t -> unit = "filib_caml_do_acoth" "noalloc"
   external asin : rw t -> 'a t -> unit = "filib_caml_do_asin" "noalloc"
+  external asinh : rw t -> 'a t -> unit = "filib_caml_do_asinh" "noalloc"
   external atan : rw t -> 'a t -> unit = "filib_caml_do_atan" "noalloc"
   external atanh : rw t -> 'a t -> unit = "filib_caml_do_atanh" "noalloc"
   external cos : rw t -> 'a t -> unit = "filib_caml_do_cos" "noalloc"

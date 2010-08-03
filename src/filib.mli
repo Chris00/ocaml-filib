@@ -51,9 +51,6 @@ val inf : 'a t -> float
 val sup : 'a t -> float
 (** [sup x] upper bound of the interval [x].  Returns NaN if [x] is empty. *)
 
-val is_empty : 'a t -> bool
-(** [is_empty x] tells whether the interval [x] is empty or not. *)
-
 val to_string : 'a t -> string
 
 val print : out_channel -> 'a t -> unit
@@ -62,10 +59,11 @@ val pretty_print : Format.formatter -> 'a t -> unit
 
 (** {2 Access and Information} *)
 
+external is_empty : 'a t -> bool = "filib_caml_isEmpty" "noalloc"
+(** [is_empty x] tells whether the interval [x] is empty or not. *)
+
 external is_point : 'a t -> bool = "filib_caml_isPoint" "noalloc"
 (** [is_point i] returns true, iff [i] is a point interval. *)
-
-external is_empty : 'a t -> bool = "filib_caml_isEmpty" "noalloc"
 
 external is_infinite : 'a t -> bool = "filib_caml_isInfinite" "noalloc"
 
@@ -130,6 +128,7 @@ external acos : 'a t -> rw t = "filib_caml_acos"
 external acosh : 'a t -> rw t = "filib_caml_acosh"
 external acoth : 'a t -> rw t = "filib_caml_acoth"
 external asin : 'a t -> rw t = "filib_caml_asin"
+external asinh : 'a t -> rw t = "filib_caml_asinh"
 external atan : 'a t -> rw t = "filib_caml_atan"
 external atanh : 'a t -> rw t = "filib_caml_atanh"
 external cos : 'a t -> rw t = "filib_caml_cos"
@@ -278,6 +277,7 @@ sig
   external acosh : rw t -> 'a t -> unit = "filib_caml_do_acosh" "noalloc"
   external acoth : rw t -> 'a t -> unit = "filib_caml_do_acoth" "noalloc"
   external asin : rw t -> 'a t -> unit = "filib_caml_do_asin" "noalloc"
+  external asinh : rw t -> 'a t -> unit = "filib_caml_do_asinh" "noalloc"
   external atan : rw t -> 'a t -> unit = "filib_caml_do_atan" "noalloc"
   external atanh : rw t -> 'a t -> unit = "filib_caml_do_atanh" "noalloc"
   external cos : rw t -> 'a t -> unit = "filib_caml_do_cos" "noalloc"
