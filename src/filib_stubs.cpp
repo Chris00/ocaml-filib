@@ -256,14 +256,21 @@ OP1(tanh)
     CAMLreturn(copy_double(f(I_VAL(vi1), I_VAL(vi2)))); \
   }
 
-#define OP2(name, f, ty1, ty2)                  \
-  EXPORT(name)(value vi1, value vi2)            \
-  {                                             \
-    CAMLparam2(vi1, vi2);                       \
-    CAMLlocal1(vo);                             \
-    I_SET(vo, filib::f(ty1(vi1), ty2(vi2)));    \
-    CAMLreturn(vo);                             \
+#define OP2(name, f, ty1, ty2)                        \
+  EXPORT(name)(value vi1, value vi2)                  \
+  {                                                   \
+    CAMLparam2(vi1, vi2);                             \
+    CAMLlocal1(vo);                                   \
+    I_SET(vo, filib::f(ty1(vi1), ty2(vi2)));          \
+    CAMLreturn(vo);                                   \
+  }                                                   \
+  EXPORT(do_ ## name)(value vo, value vi1, value vi2) \
+  {                                                   \
+    /* noalloc */                                     \
+    I_VAL(vo) = filib::f(ty1(vi1), ty2(vi2));         \
+    return Val_unit;                                  \
   }
+  
 
 OP2(imin, imin, I_VAL, I_VAL)
 OP2(imax, imax, I_VAL, I_VAL)
