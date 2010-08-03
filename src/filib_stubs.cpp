@@ -34,11 +34,13 @@ interval;
 #define I_PTR(v) ((interval *) Data_custom_val(v))
 #define I_VAL(v) (* (I_PTR(v)))
 
-#define I_ALLOC() alloc_custom(&caml_filib_ops, sizeof(interval), 1, 300000)
+#define I_SET(v, e)                                                    \
+  v = alloc_custom(&caml_filib_ops, sizeof(interval), 1, 300000);      \
+  I_VAL(v) = e
 
 static void caml_filib_finalize(value v)
 {
-//  delete(I_PTR(v));
+  // delete(I_PTR(v)); // the custom block holds the object.
 }
 
 static struct custom_operations caml_filib_ops = {
@@ -60,8 +62,7 @@ EXPORT(init)(value vunit)
   {                                             \
     CAMLparam1(v);                              \
     CAMLlocal1(vi);                             \
-    vi = I_ALLOC();                             \
-    I_VAL(vi) = f;                              \
+    I_SET(vi, f);                               \
     CAMLreturn(vi);                             \
   }
 
@@ -80,8 +81,7 @@ EXPORT(interval)(value va, value vb)
 {
   CAMLparam2(va, vb);
   CAMLlocal1(vi);
-  vi = I_ALLOC();
-  I_VAL(vi) = interval(Double_val(va), Double_val(vb));
+  I_SET(vi, interval(Double_val(va), Double_val(vb)));
   CAMLreturn(vi);
 }
 
@@ -159,8 +159,7 @@ EXPORT(do_div_float)(value va, value vb)
   {                                             \
     CAMLparam2(vi1, vi2);                       \
     CAMLlocal1(vo);                             \
-    vo = I_ALLOC();                             \
-    I_VAL(vo) = I_VAL(vi1) op I_VAL(vi2);       \
+    I_SET(vo, I_VAL(vi1) op I_VAL(vi2));        \
     CAMLreturn(vo);                             \
   }
 
@@ -199,8 +198,7 @@ FLOAT_OP1(mag)
   {                                             \
     CAMLparam1(vi);                             \
     CAMLlocal1(vo);                             \
-    vo = I_ALLOC();                             \
-    I_VAL(vo) = f(I_VAL(vi));                   \
+    I_SET(vo, f(I_VAL(vi)));                    \
     CAMLreturn(vo);                             \
   }                                             \
   EXPORT(do_ ## f)(value vo, value vi)          \
@@ -249,8 +247,7 @@ OP1(tanh)
   {                                             \
     CAMLparam2(vi1, vi2);                       \
     CAMLlocal1(vo);                             \
-    vo = I_ALLOC();                             \
-    I_VAL(vo) = filib::f(ty1(vi1), ty2(vi2));   \
+    I_SET(vo, filib::f(ty1(vi1), ty2(vi2)));    \
     CAMLreturn(vo);                             \
   }
 
