@@ -23,9 +23,9 @@ type +'a t
 type ro_t = ro t
 type rw_t = rw t
 
-external init : unit -> unit = "filib_caml_init" "noalloc"
+external setup : unit -> unit = "filib_caml_setup" "noalloc"
 
-let () = init()
+let () = setup()
 
 external empty : unit -> rw t = "filib_caml_EMPTY"
 external entire : unit -> rw t = "filib_caml_ENTIRE"
@@ -206,3 +206,9 @@ struct
   external hull_float : rw t -> float -> 'a t -> unit = "filib_caml_do_hull_float"
      "noalloc"
 end
+
+
+external round_downward : unit -> unit = "filib_caml_downward" "noalloc"
+external round_upward : unit -> unit = "filib_caml_upward" "noalloc"
+external round_to_nearest : unit -> unit = "filib_caml_tonearest" "noalloc"
+external round_to_zero : unit -> unit = "filib_caml_tozero" "noalloc"

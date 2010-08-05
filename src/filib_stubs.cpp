@@ -51,11 +51,20 @@ static struct custom_operations caml_filib_ops = {
   custom_serialize_default,
   custom_deserialize_default };
 
-EXPORT(init)(value vunit)
-{
-  filib::fp_traits<double>::setup();
-  return Val_unit;
-}
+#define DO(f)                                   \
+  EXPORT(f)(value v)                            \
+  {                                             \
+    /* noalloc */                               \
+    filib::fp_traits<double>::f();              \
+    return(Val_unit);                           \
+  }
+
+DO(setup)
+DO(downward)
+DO(upward)
+DO(tozero)
+DO(tonearest)
+DO(reset)
 
 #define NEW_INTERVAL(name, f)                   \
   EXPORT(name)(value v)                         \

@@ -329,3 +329,9 @@ sig
   external hull_float : rw t -> float -> 'a t -> unit = "filib_caml_do_hull_float"
      "noalloc"
 end
+
+
+external round_downward : unit -> unit = "filib_caml_downward" "noalloc"
+external round_upward : unit -> unit = "filib_caml_upward" "noalloc"
+external round_to_nearest : unit -> unit = "filib_caml_tonearest" "noalloc"
+external round_to_zero : unit -> unit = "filib_caml_tozero" "noalloc"
