@@ -26,13 +26,261 @@ let print =
   in (new P.printer ())#expr Format.err_formatter
 
 let filib = Macro.Module_longident.of_string "Filib"
+let filib_do = Macro.Module_longident.of_string "Filib.Do"
 
-(* FIXME: some literals may not be represented exactly *)
-let t = int empty
-  (fun i _ _loc ->
-    (* If the integer is not large, do not use 64 bits *)
-    let p = if -65536 <= i && i <= 65535 then 16 else 64 in
-    <:expr< (Filib.of_float $`int:i$ ~prec:$`int:p$ :> Filib.ro_t) >>)
+let bin_rels = [ "="; "<>"; "<"; "<="; ">"; ">="]
+let bin_ops_infix = [ "+."; "-."; "*."; "/."; "**"]
+let bin_ops_prefix = [ "min"; "max"; "hull" ]
+let bin_ops = bin_ops_infix @ bin_ops_prefix
+
+let unary_ops_ascii = [
+  "abs"; "acos"; "acosh"; "acoth"; "asin"; "asinh"; "atan"; "atanh";
+  "cos"; "cosh"; "cot"; "coth"; "exp"; "exp10"; "exp2"; "expm1";
+  "log"; "log10"; "log1p"; "log2"; "sin"; "sinh"; "sqr"; "sqrt";
+  "tan"; "tanh" ]
+
+let unary_ops = "~-" :: unary_ops_ascii
+
+let open_for = [
+  "empty"; "entire"; "of_float"; "interval"; "copy"; "inf"; "sup";
+  "to_string"; "print"; "pretty_print";
+  "is_empty"; "is_point"; "is_infinite";
+  "mid"; "diam"; "rel_diam"; "rad"; "mig"; "mag" ]
+  @ unary_ops_ascii
+
+
+(** Functions to manage sets of temporary variables needed to compute
+    expressions. *)
+module Var =
+struct
+  let vars = ref []
+  (* Global var holding the temporary variables for the current
+     expression (in which overloadings are resolved).  If [Filib.(e)]
+     occurs inside [Filib.()] overloading, all temporary variables
+     will be put before the external overloading. *)
+
+  let level = ref 0
+  (* Cound the number of nested overloadings for Filib. *)
+
+  let init() =
+    assert(!vars = []);
+    incr level
+
+  let letin e =
+    decr level; (* leave the current overloading *)
+    if !level = 0 then (* outer overloading => declare vars *)
+      let add_var e v =
+        let _loc = Ast.loc_of_expr e in
+        <:expr< let $lid:v$ = Filib.empty() in $e$ >> in
+      let e = List.fold_left add_var e !vars in
+      vars := [];
+      e
+    else e
+
+  (** Add the setup to the set of overloadings [t] to be able to use
+      this module. *)
+  let setup t =
+    let t = before t init in
+    after t letin
+
+  (** [use f] perform [f v] where [v] is picked in available temporary
+      variables (or created anew). *)
+  let use f =
+    let new_var = match !vars with
+      | [] -> new_lid() (* Create a new variable *)
+      | v :: tl -> vars := tl; v in
+    let e = f new_var in
+    vars := new_var :: !vars;
+    e
+
+  (** Add the variable [v] to the list of temporaries for performing
+      [f] and remove it after (as [v] may not be in the scope for
+      other expressions).  It is expected that [v] needs not to be
+      initialized. *)
+  let add v f =
+    vars := v :: !vars;
+    let e = f() in
+    vars := List.tl !vars;
+    e
+end
+
+
+type expr =
+| Float of Loc.t * string      (* float constant *)
+| Var of Loc.t * string        (* variable (lowercase identifier) *)
+| Op1 of Loc.t * string * expr (* unary operation (inclusing "~-") *)
+| Op2 of Loc.t * string * expr * expr (* binary op, including "+",... *)
+| Unknown of Ast.expr          (* unknown term *)
+
+let loc_of_expr = function
+  | Float(l,_) | Var(l,_) | Op1(l,_,_) | Op2(l,_,_,_) -> l
+  | Unknown e -> Ast.loc_of_expr e
+
+let binary_op _loc lid = match lid with
+  (* specializations used below *)
+  | "+." -> <:expr< Filib.Do.add >>
+  | "-." -> <:expr< Filib.Do.sub >>
+  | "*." -> <:expr< Filib.Do.mul >>
+  | "/." -> <:expr< Filib.Do.div >>
+  | _ -> qualify_lid lid filib_do _loc
+
+
+(* Transformation of float constants to intervals
+ *************************************************)
+
+let saved_const_intervals = Hashtbl.create 10
+
+(** [const_interval x_lit] return the variable name of the constant
+    interval in which [x_lit] is stored.  It caches the transformation
+    at the beginning of the file. *)
+let const_interval _loc x_lit =
+  try
+    let x = Hashtbl.find saved_const_intervals x_lit in
+    <:expr< $lid:x$ >> (* use the current location *)
+  with Not_found ->
+    let x = new_lid() in
+    add_to_beginning_of_file (<:str_item<
+                                 let $lid:x$ =
+                                   Filib.round_downward();
+                                   let x_inf = $flo:x_lit$ in
+                                   Filib.round_upward();
+                                   let x_sup = $flo:x_lit$ in
+                                   Filib.round_to_nearest();
+                                   Filib.interval x_inf x_sup
+                                   >> );
+    Hashtbl.add saved_const_intervals x_lit x;
+    <:expr< $lid:x$ >>
+;;
+
+(* Overloading
+ **************)
+
+(* We cannot use the [Delimited_overloading.float] function because it
+   returns the float already converted while we need it in literal
+   form to be able to map it to an interval. *)
+
+let t = Var.setup empty
+
+(** Evaluate [e] a single time, possibly putting it in a variable [v]
+    of [Var] and execute [f v] -- typically to generate code for an
+    expression depending on [e]. *)
+let rec with_var_for e f =
+  match e with
+  | Float(_loc, v) -> f <:expr< $flo:v$ >>
+  | Var(_loc, v) -> f <:expr< $lid:v$ >> (* use the var *)
+  | _ ->
+    let _loc = loc_of_expr e in
+    Var.use (fun v ->
+      let code_f = f <:expr< $lid:v$ >> in
+      <:expr< $set v e$;  $code_f$ >>)
+
+(** @return the code to do [res <- e]. *)
+and set res e =
+  (* Do not add [res] to hold intermediate computations as it may
+     conflict if it is a free var in [e]. *)
+  match e with
+  | Op1(_loc, lid, e) ->
+    let op = match lid with
+      | "~-" -> <:expr< Filib.Do.neg >>
+      | _ -> qualify_lid lid filib_do _loc in
+    with_var_for e (fun e -> <:expr< $op$ $lid:res$ $e$ >>)
+
+  (* Specialized functions for +,-,*,/ on literals *)
+  | Op2(_loc, "+.", e, Float(locx, x)) | Op2(_loc, "+.", Float(locx, x), e) ->
+    let x = <:expr@locx< $flo:x$ >> in
+    with_var_for e (fun e -> <:expr< Filib.Do.add_float $lid:res$ $e$ $x$ >>)
+  | Op2(_loc, "*.", e, Float(locx, x)) | Op2(_loc, "*.", Float(locx, x), e) ->
+    let x = <:expr@locx< $flo:x$ >> in
+    with_var_for e (fun e -> <:expr< Filib.Do.mul_float $lid:res$ $e$ $x$ >>)
+  | Op2(_loc, "-.", e, Float(locx, x)) ->
+    let x = <:expr@locx< $flo:x$ >> in
+    with_var_for e (fun e -> <:expr< Filib.Do.sub_float $lid:res$ $e$ $x$ >>)
+  | Op2(_loc, "-.", Float(locx, x), e) ->
+    let x = <:expr@locx< $flo:x$ >> in
+    with_var_for e (fun e -> <:expr< Filib.Do.float_sub $lid:res$ $x$ $e$ >>)
+  | Op2(_loc, "/.", e, Float(locx, x)) ->
+    let x = <:expr@locx< $flo:x$ >> in
+    with_var_for e (fun e -> <:expr< Filib.Do.div_float $lid:res$ $e$ $x$ >>)
+  | Op2(_loc, "/.", Float(locx, x), e) ->
+    let x = <:expr@locx< $flo:x$ >> in
+    with_var_for e (fun e -> <:expr< Filib.Do.float_div $lid:res$ $x$ $e$ >>)
+
+  (* Exponentiation *)
+  | Op2(_loc, "**", e, Float(locx, x_lit)) ->
+    let x = float_of_string x_lit in
+    if x = 2. then
+      with_var_for e (fun e -> <:expr< Filib.Do.sqr $lid:res$ $e$ >>)
+    else
+      let trunc_x = truncate x in
+      if x = float_of_int trunc_x then
+        with_var_for e (fun e ->
+          <:expr< Filib.Do.power $lid:res$ $e$ $`int:trunc_x$ >>)
+      else
+        let x = const_interval locx x_lit in
+        with_var_for e (fun e -> <:expr< Filib.Do.pow $lid:res$ $e$ $x$ >>)
+
+  (* Binary operations (general case) *)
+  | Op2(_loc, op, Var(locv, v), e) ->
+    let v = <:expr@locv< $lid:v$ >> in
+    with_var_for e (fun e -> <:expr< $binary_op _loc op$ $lid:res$ $v$ $e$ >>)
+  | Op2(_loc, op, e, Var(locv, v)) ->
+    let v = <:expr@locv< $lid:v$ >> in
+    with_var_for e (fun e -> <:expr< $binary_op _loc op$ $lid:res$ $e$ $v$ >>)
+  | Op2(_loc, op, e1, e2) ->
+    with_var_for e1 (fun e1 ->
+      with_var_for e2 (fun e2 ->
+        <:expr< $binary_op _loc op$ $lid:res$ $e1$ $e2$ >>))
+
+  | Float(_loc, x) -> const_interval _loc x
+  | Var(_loc, v) ->
+    if res = v then <:expr< >> (* nothing to do *)
+    else <:expr< Filib.Do.copy $lid:res$ $lid:v$ >>
+  | Unknown e ->
+    let _loc = Ast.loc_of_expr e in
+    <:expr< Filib.Do.copy $lid:res$ $e$ >>
+
+
+(* Parse an interval expression. *)
+let rec parse_expr tr = function
+  | <:expr@loc< $flo:x$ >> -> Float(loc, x)
+  | <:expr@loc< $lid:op$ $e1$ $e2$ >>
+      when List.mem op bin_ops || List.mem op bin_rels ->
+    Op2(loc, op, parse_expr tr e1, parse_expr tr e2)
+  | <:expr@loc< $lid:op$ $e1$ >> when List.mem op unary_ops ->
+    Op1(loc, op, parse_expr tr e1)
+  | <:expr@loc< $lid:op$ >> -> Var(loc, op)
+        (* FIXME: the notion of variable should be generalized e.g. to x.z *)
+  | e -> Unknown((self tr)#expr e)
+
+let specialize tr expr =
+  let _loc = Ast.loc_of_expr expr in
+  match expr with
+  | <:expr@loc< $flo:x$ >> -> const_interval loc x
+  (* Assignment *)
+  | <:expr< $lid:r$ <- $e$ >> ->
+    set r (parse_expr tr e)
+  (* Unary ops *)
+  | <:expr< $lid:f$ $e$ >> when List.mem f unary_ops ->
+    with_var_for (Op1(_loc, f, parse_expr tr e)) (fun e -> e)
+  (* binary operators (+, ...) *)
+  | <:expr< $lid:f$ $e1$ $e2$ >> when List.mem f bin_ops ->
+    with_var_for (Op2(_loc, f, parse_expr tr e1, parse_expr tr e2))
+      (fun e -> e)
+  (* binary relations (<, ...) *)
+  | <:expr< $lid:f$ $e1$ $e2$ >> when List.mem f bin_rels ->
+    (* FIXME: ugly hack, empty var *)
+    set "" (Op2(_loc, f, parse_expr tr e1, parse_expr tr e2))
+
+  (* Explicitely open the module for the functions of the functional
+     interface (the ones of the imperative interface are supposed to
+     be used through the "<-" notation) *)
+  | <:expr@_loc< $lid:f$ >> when List.mem f open_for ->
+    qualify_lid f filib _loc
+
+  | _ -> super tr expr
+
+
+let t = expr t specialize
 
 
 let () = associate t "Filib"
