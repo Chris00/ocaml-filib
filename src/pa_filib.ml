@@ -166,7 +166,7 @@ let t = Var.setup empty
     expression depending on [e]. *)
 let rec with_var_for e f =
   match e with
-  | Float(_loc, v) -> f <:expr< $flo:v$ >>
+  | Float(_loc, x) -> f (const_interval _loc x)
   | Var(_loc, v) -> f <:expr< $lid:v$ >> (* use the var *)
   | _ ->
     let _loc = loc_of_expr e in

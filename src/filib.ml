@@ -46,11 +46,11 @@ external is_empty : 'a t -> bool = "filib_caml_isEmpty" "noalloc"
 
 let to_string i =
   if is_empty i then "[ empty ]"
-  else Printf.sprintf "[%.16g, %.16g]" (inf i) (sup i)
+  else Printf.sprintf "[%.17g, %.17g]" (inf i) (sup i)
 
 let print fmt i =
   if is_empty i then Printf.fprintf fmt "[ empty ]"
-  else Printf.fprintf fmt "[%.16g, %.16g]" (inf i) (sup i)
+  else Printf.fprintf fmt "[%.17g, %.17g]" (inf i) (sup i)
 
 let pretty_print fmt i =
   if is_empty i then Format.fprintf fmt "[ empty ]"
