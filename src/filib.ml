@@ -141,25 +141,30 @@ external plt : 'a t -> 'a t -> bool = "filib_caml_plt"
 module Do =
 struct
 
-  external add : rw t -> 'a t -> unit = "filib_caml_do_add" "noalloc"
-  external sub : rw t -> 'a t -> unit = "filib_caml_do_sub" "noalloc"
-  external mul : rw t -> 'a t -> unit = "filib_caml_do_mul" "noalloc"
-  external div : rw t -> 'a t -> unit = "filib_caml_do_div" "noalloc"
+  external copy : rw t -> 'a t -> unit = "filib_caml_do_copy" "noalloc"
 
-  external add_float : rw t -> float -> unit
+  external add : rw t -> 'a t -> 'b t -> unit = "filib_caml_do_add" "noalloc"
+  external sub : rw t -> 'a t -> 'b t -> unit = "filib_caml_do_sub" "noalloc"
+  external mul : rw t -> 'a t -> 'b t -> unit = "filib_caml_do_mul" "noalloc"
+  external div : rw t -> 'a t -> 'b t -> unit = "filib_caml_do_div" "noalloc"
+
+  external add_to : rw t -> 'a t -> unit = "filib_caml_do_add_to" "noalloc"
+  external sub_to : rw t -> 'a t -> unit = "filib_caml_do_sub_to" "noalloc"
+  external mul_to : rw t -> 'a t -> unit = "filib_caml_do_mul_to" "noalloc"
+  external div_to : rw t -> 'a t -> unit = "filib_caml_do_div_to" "noalloc"
+
+  external add_float : rw t -> 'a t -> float -> unit
     = "filib_caml_do_add_float" "noalloc"
-  external sub_float : rw t -> float -> unit
+  external sub_float : rw t -> 'a t -> float -> unit
     = "filib_caml_do_sub_float" "noalloc"
-  external float_sub : rw t -> float -> unit
+  external float_sub : rw t -> float -> 'a t -> unit
     = "filib_caml_do_float_sub" "noalloc"
-  (** [float_sub y x] does [y <- x - y]. *)
-  external mul_float : rw t -> float -> unit
+  external mul_float : rw t -> 'a t -> float -> unit
     = "filib_caml_do_mul_float" "noalloc"
-  external div_float : rw t -> float -> unit
+  external div_float : rw t -> 'a t -> float -> unit
     = "filib_caml_do_div_float" "noalloc"
-  external float_div : rw t -> float -> unit
+  external float_div : rw t -> float -> 'a t -> unit
     = "filib_caml_do_float_div" "noalloc"
-  (** [float_div y x] performs [y <- x / y]. *)
 
   external abs : rw t -> 'a t -> unit = "filib_caml_do_abs" "noalloc"
   external acos : rw t -> 'a t -> unit = "filib_caml_do_acos" "noalloc"

@@ -77,6 +77,13 @@ NEW_INTERVAL(PI,        interval::PI())
 NEW_INTERVAL(of_float,  interval(Double_val(v)))
 NEW_INTERVAL(copy,      interval(I_VAL(v)))
 
+EXPORT(do_copy)(value vy, value vx)
+{
+  /* noalloc */
+  I_VAL(vy) = I_VAL(vx);
+  return(Val_unit);
+}
+
 EXPORT(interval)(value va, value vb)
 {
   CAMLparam2(va, vb);
@@ -98,89 +105,73 @@ EXPORT(sup)(value vi)
 }
 
 
-EXPORT(do_add)(value va, value vb)
+EXPORT(do_add_to)(value va, value vb)
 {
   /* noalloc */
   I_VAL(va) += I_VAL(vb);
   return(Val_unit);
 }
 
-EXPORT(do_sub)(value va, value vb)
+EXPORT(do_sub_to)(value va, value vb)
 {
   /* noalloc */
   I_VAL(va) -= I_VAL(vb);
   return(Val_unit);
 }
 
-EXPORT(do_mul)(value va, value vb)
+EXPORT(do_mul_to)(value va, value vb)
 {
   /* noalloc */
   I_VAL(va) *= I_VAL(vb);
   return(Val_unit);
 }
 
-EXPORT(do_div)(value va, value vb)
+EXPORT(do_div_to)(value va, value vb)
 {
   /* noalloc */
   I_VAL(va) /= I_VAL(vb);
   return(Val_unit);
 }
 
-EXPORT(do_add_float)(value va, value vb)
-{
-  /* noalloc */
-  I_VAL(va) += Double_val(vb);
-  return(Val_unit);
-}
-
-EXPORT(do_sub_float)(value va, value vb)
-{
-  /* noalloc */
-  I_VAL(va) -= Double_val(vb);
-  return(Val_unit);
-}
-
-EXPORT(do_float_sub)(value va, value vb)
-{
-  /* noalloc */
-  I_VAL(va) = Double_val(vb) - I_VAL(va);
-  return(Val_unit);
-}
-
-EXPORT(do_mul_float)(value va, value vb)
-{
-  /* noalloc */
-  I_VAL(va) *= Double_val(vb);
-  return(Val_unit);
-}
-
-EXPORT(do_div_float)(value va, value vb)
-{
-  /* noalloc */
-  I_VAL(va) /= Double_val(vb);
-  return(Val_unit);
-}
-
-EXPORT(do_float_div)(value va, value vb)
-{
-  /* noalloc */
-  I_VAL(va) = Double_val(vb) / I_VAL(va);
-  return(Val_unit);
-}
-
-#define ARITH(name, op)                         \
-  EXPORT(name)(value vi1, value vi2)            \
-  {                                             \
-    CAMLparam2(vi1, vi2);                       \
-    CAMLlocal1(vo);                             \
-    I_SET(vo, I_VAL(vi1) op I_VAL(vi2));        \
-    CAMLreturn(vo);                             \
+#define ARITH(name, op)                                         \
+  EXPORT(name)(value vi1, value vi2)                            \
+  {                                                             \
+    CAMLparam2(vi1, vi2);                                       \
+    CAMLlocal1(vo);                                             \
+    I_SET(vo, I_VAL(vi1) op I_VAL(vi2));                        \
+    CAMLreturn(vo);                                             \
+  }                                                             \
+  EXPORT(do_ ## name)(value vo, value vi1, value vi2)           \
+  {                                                             \
+    /* noalloc */                                               \
+    I_VAL(vo) = I_VAL(vi1) op I_VAL(vi2);                       \
+    return(Val_unit);                                           \
+  }                                                             \
+  EXPORT(do_ ## name ## _float)(value vo, value vi, value vf)   \
+  {                                                             \
+    /* noalloc */                                               \
+    I_VAL(vo) = I_VAL(vi) op Double_val(vf);                    \
+    return(Val_unit);                                           \
   }
 
 ARITH(add, + )
 ARITH(sub, - )
 ARITH(mul, * )
 ARITH(div, / )
+
+EXPORT(do_float_sub)(value vy, value vf, value vi)
+{
+  /* noalloc */
+  I_VAL(vy) = Double_val(vf) - I_VAL(vi);
+  return(Val_unit);
+}
+
+EXPORT(do_float_div)(value vy, value vf, value vi)
+{
+  /* noalloc */
+  I_VAL(vy) = Double_val(vf) / I_VAL(vi);
+  return(Val_unit);
+}
 
 #define BOOL_OP1(f)                             \
   EXPORT(f)(value vi)                           \
