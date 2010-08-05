@@ -270,7 +270,9 @@ OP1(tanh)
     I_VAL(vo) = filib::f(ty1(vi1), ty2(vi2));         \
     return Val_unit;                                  \
   }
-  
+
+OP2(power, power, I_VAL, Int_val)
+OP2(pow,   pow,   I_VAL, I_VAL)
 
 OP2(imin, imin, I_VAL, I_VAL)
 OP2(imax, imax, I_VAL, I_VAL)
