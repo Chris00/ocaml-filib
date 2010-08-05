@@ -173,6 +173,14 @@ EXPORT(do_float_div)(value vy, value vf, value vi)
   return(Val_unit);
 }
 
+EXPORT(do_neg)(value vy, value vx)
+{
+  /* noalloc */
+  I_VAL(vy) = - I_VAL(vx);
+  return(Val_unit);
+}
+
+
 #define BOOL_OP1(f)                             \
   EXPORT(f)(value vi)                           \
   {                                             \

@@ -255,6 +255,9 @@ sig
   external copy : rw t -> 'a t -> unit = "filib_caml_do_copy" "noalloc"
   (** [copy y x] performs [y <- x]. *)
 
+  external neg : rw t -> 'a t -> unit = "filib_caml_do_neg" "noalloc"
+  (** Unary negation. *)
+
   external add : rw t -> 'a t -> 'b t -> unit = "filib_caml_do_add" "noalloc"
   external sub : rw t -> 'a t -> 'b t -> unit = "filib_caml_do_sub" "noalloc"
   external mul : rw t -> 'a t -> 'b t -> unit = "filib_caml_do_mul" "noalloc"

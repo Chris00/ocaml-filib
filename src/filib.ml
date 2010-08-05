@@ -143,6 +143,8 @@ struct
 
   external copy : rw t -> 'a t -> unit = "filib_caml_do_copy" "noalloc"
 
+  external neg : rw t -> 'a t -> unit = "filib_caml_do_neg" "noalloc"
+
   external add : rw t -> 'a t -> 'b t -> unit = "filib_caml_do_add" "noalloc"
   external sub : rw t -> 'a t -> 'b t -> unit = "filib_caml_do_sub" "noalloc"
   external mul : rw t -> 'a t -> 'b t -> unit = "filib_caml_do_mul" "noalloc"
