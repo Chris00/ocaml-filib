@@ -8,7 +8,7 @@ archive(native) = "filib.cmxa"
 
 package "syntax" (
   description = "Overloading for Filib expressions"
-  requires = "pa_do, filib"
+  requires = "pa_do, filib, num"
   archive(syntax,preprocessor) = "pa_filib.cmo"
   archive(byte,toploop) = "pa_filib.cmo"
 )

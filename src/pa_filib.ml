@@ -126,7 +126,78 @@ let binary_op _loc lid = match lid with
 
 
 (* Transformation of float constants to intervals
- *************************************************)
+ ***********************************************************************)
+(* The transformation of decimal FP numbers to binary IEEE-754 format
+   performed here is fairly naive.  It could be made more efficient by
+   using the following papers:
+
+   William D. Clinger. How to read floating point numbers accurately. In
+   PLDI, pages 92–101. ACM, 1990. ISBN 0-89791-364-7.
+
+   David M. Gay, Correctly Rounded Binary-Decimal and Decimal-Binary
+   Conversions. Numerical Analysis Manuscript 90-10, AT&T Bell
+   Laboratories, Murray Hill, NJ (1990).  *)
+
+let emin = -1022 (* correspond to 1 *)
+let emax = 1023  (* correspond to 2046 *)
+
+(** Parse a literal float and returns the corresponding num. *)
+let num_of_literal lit =
+  let len = String.length lit in
+  let neg = lit.[0] = '-' in
+  let start = if neg then 1 else 0 in
+  let dot = String.index lit '.' in
+  let e =
+    try String.index lit 'e'
+    with Not_found ->
+      try String.index lit 'E' with Not_found -> len in
+  let m1 = String.sub lit start (dot - start)
+  and m2 = String.sub lit (dot + 1) (e - dot - 1) in
+  let m2_len = String.length m2 in
+  let mantissa = Num.(of_string (m1 ^ m2) / (10**(of_int m2_len))) in
+  let n =
+    if e = len then mantissa
+    else
+      let e = int_of_string (String.sub lit (e + 1) (len - e - 1)) in
+      Num.(mantissa * 10**(of_int e))in
+  (neg, n)
+
+let rec exponent_pos n e =
+  if Num.(n < 2) then e, n
+  else exponent_pos Num.(n / 2) (e + 1)
+
+let rec exponent_neg n e =
+  if Num.(n >= 1) then e, n
+  else exponent_neg Num.(n * 2) (e - 1)
+
+(** return the number [e] such that [m = n * 2**(-e) ∈ [1,2[].  Returns
+    also the manstissa [m]. *)
+let exponent n =
+  assert(Num.(n > 0));
+  if Num.(n >= 1) then exponent_pos n 0
+  else exponent_neg n 0
+
+let shift_mantissa = Num.(2**52)
+
+let inf_sup lit =
+  let neg, n = num_of_literal lit in
+  (* Sign bit *)
+  let f = if neg then 0x8000000000000000L else 0x0L in
+  if Num.(n = 0) then f, f
+  else begin
+    let e, m = exponent n in
+    (* FIXME: denormalized numbers *)
+    eprintf ">>> %s => e = %i, m = %s " lit e Num.(to_string m);
+    let e = e - emin + 1 in
+    let f = Int64.(f lor (of_int e lsl 52)) in
+    let m = Num.((m - 1) * shift_mantissa) in
+    let m_inf = Num.(to_int(floor m))
+    and m_sup = Num.(to_int(ceil m)) in
+    eprintf "in [%i, %i] * 2^-52\n" m_inf m_sup;
+    let f_inf = Int64.(f lor (of_int m_inf))
+    and f_sup = Int64.(f lor (of_int m_sup)) in
+    if neg then f_sup, f_inf else f_inf, f_sup
+  end
 
 let saved_const_intervals = Hashtbl.create 10
 
@@ -139,21 +210,20 @@ let const_interval _loc x_lit =
     <:expr< $lid:x$ >> (* use the current location *)
   with Not_found ->
     let x = new_lid() in
-    add_to_beginning_of_file (<:str_item<
-                                 let $lid:x$ =
-                                   Filib.round_downward();
-                                   let x_inf = $flo:x_lit$ in
-                                   Filib.round_upward();
-                                   let x_sup = $flo:x_lit$ in
-                                   Filib.round_to_nearest();
-                                   Filib.interval x_inf x_sup
-                                   >> );
+    let x_inf, x_sup = inf_sup x_lit in
+    add_to_beginning_of_file
+      (<:str_item<
+          let $lid:x$ =
+            let x_inf = Int64.float_of_bits $`int64:x_inf$ in
+            let x_sup = Int64.float_of_bits $`int64:x_sup$ in
+            (Filib.interval x_inf x_sup :> Filib.ro_t)
+            >> );
     Hashtbl.add saved_const_intervals x_lit x;
     <:expr< $lid:x$ >>
 ;;
 
 (* Overloading
- **************)
+ ***********************************************************************)
 
 (* We cannot use the [Delimited_overloading.float] function because it
    returns the float already converted while we need it in literal
