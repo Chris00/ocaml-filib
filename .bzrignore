@@ -5,3 +5,4 @@
 *.exe
 *.com
 gmon.out
+tests/add_filib
