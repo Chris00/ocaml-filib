@@ -1,15 +1,7 @@
-OBJ = .o
-CXX = g++
-CXXFLAGS = -fPIC -frounding-math -O3 -DFILIB_EXTENDED
-PKG_NAME = filib
-FILIB = ../../filib++
-# by default, filib compiles to a static lib which will be included in
-# the OCaml lib.
-FILIB_LIB = $(FILIB)/libprim/.libs/libprim.a
+ROOT = ..
+include ../Makefile.conf
 STUBS_LIB = filib_stubs
 DOCDIR = ../doc
-
-OCAMLINCLUDES += +camlp4
 
 INSTALL_FILES = META filib.mli filib.cmi filib.cma \
   filib.cmxa filib.a filib_top.cma \
@@ -20,7 +12,8 @@ all: byte native
 byte: filib.cma filib_top.cma
 native: filib.cmxa
 
-
+# by default, filib compiles to a static lib which will be included in
+# the OCaml lib.
 filib.cma filib.cmxa: filib.cmo filib.cmx filib_stubs$(OBJ)
 	ocamlmklib -o $(basename $@) -oc $(STUBS_LIB) $^ -lstdc++ \
 	  -cclib $(FILIB_LIB) -custom
@@ -33,8 +26,12 @@ filib_top.cma: filib_top.cmo
 ifneq "$(shell  ocamlfind query pa_do 2> /dev/null)" ""
 OCAMLPACKS += pa_do
 byte: pa_filib.cmo
-PP = camlp4 -parser oq -parser op pr_dump.cmo
+#PP = camlp4 -parser oq -parser op pr_dump.cmo
 INSTALL_FILES += pa_filib.cmo
+pa_filib.cmo: OCAMLPACKS += pa_do.num,camlp4.quotations.o
+pa_filib.cmo: OCAMLC_FLAGS += -syntax camlp4o
+# For ocamldep:
+SYNTAX_OPTS += -syntax camlp4o -package "pa_do.num,camlp4.quotations.o"
 endif
 
 .PHONY: install uninstall reinstall doc
