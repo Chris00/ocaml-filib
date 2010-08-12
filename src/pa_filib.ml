@@ -53,27 +53,31 @@ let open_for = [
     expressions. *)
 module Var =
 struct
-  let vars = ref []
+  let available_vars = ref []
   (* Global var holding the temporary variables for the current
      expression (in which overloadings are resolved).  If [Filib.(e)]
      occurs inside [Filib.()] overloading, all temporary variables
      will be put before the external overloading. *)
+  let declared_vars = ref []
+  (* All temp vars, even those which cannot be reused (are only used
+     for a single "toplevel" expression).  Superset of [available_vars]. *)
 
   let level = ref 0
   (* Cound the number of nested overloadings for Filib. *)
 
   let init() =
-    assert(!vars = []);
+    assert(!available_vars = [] && !declared_vars = []);
     incr level
 
   let letin e =
     decr level; (* leave the current overloading *)
     if !level = 0 then (* outer overloading => declare vars *)
-      let add_var e v =
+      let declare e v =
         let _loc = Ast.loc_of_expr e in
         <:expr< let $lid:v$ = Filib.empty() in $e$ >> in
-      let e = List.fold_left add_var e !vars in
-      vars := [];
+      let e = List.fold_left declare e !declared_vars in
+      declared_vars := [];
+      available_vars := [];
       e
     else e
 
@@ -84,13 +88,16 @@ struct
     after t letin
 
   (** [use f] perform [f v] where [v] is picked in available temporary
-      variables (or created anew). *)
-  let use f =
-    let new_var = match !vars with
+      variables (or created anew).  If [once], then the variable is
+      not added to the list of temporary variables (it may be, for
+      example, because it is further used in the program). *)
+  let use ?(once=false) f =
+    let new_var = match !available_vars with
       | [] -> new_lid() (* Create a new variable *)
-      | v :: tl -> vars := tl; v in
+      | v :: tl -> available_vars := tl; v in
     let e = f new_var in
-    vars := new_var :: !vars;
+    declared_vars := new_var :: !declared_vars;
+    if not once then available_vars := new_var :: !available_vars;
     e
 
   (** Add the variable [v] to the list of temporaries for performing
@@ -98,9 +105,9 @@ struct
       other expressions).  It is expected that [v] needs not to be
       initialized. *)
   let add v f =
-    vars := v :: !vars;
+    available_vars := v :: !available_vars;
     let e = f() in
-    vars := List.tl !vars;
+    available_vars := List.tl !available_vars;
     e
 end
 
@@ -186,7 +193,7 @@ let inf_sup lit =
   if Num.(n = 0) then f, f
   else begin
     let e, m = exponent n in
-    (* FIXME: denormalized numbers *)
+    (* FIXME: denormalized numbers and infinites *)
     eprintf ">>> %s => e = %i, m = %s " lit e Num.(to_string m);
     let e = e - emin + 1 in
     let f = Int64.(f lor (of_int e lsl 52)) in
@@ -234,13 +241,13 @@ let t = Var.setup empty
 (** Evaluate [e] a single time, possibly putting it in a variable [v]
     of [Var] and execute [f v] -- typically to generate code for an
     expression depending on [e]. *)
-let rec with_var_for e f =
+let rec use_var_for ?once e f =
   match e with
   | Float(_loc, x) -> f (const_interval _loc x)
   | Var(_loc, v) -> f <:expr< $lid:v$ >> (* use the var *)
   | _ ->
     let _loc = loc_of_expr e in
-    Var.use (fun v ->
+    Var.use ?once (fun v ->
       let code_f = f <:expr< $lid:v$ >> in
       <:expr< $set v e$;  $code_f$ >>)
 
@@ -253,52 +260,52 @@ and set res e =
     let op = match lid with
       | "~-" -> <:expr< Filib.Do.neg >>
       | _ -> qualify_lid lid filib_do _loc in
-    with_var_for e (fun e -> <:expr< $op$ $lid:res$ $e$ >>)
+    use_var_for e (fun e -> <:expr< $op$ $lid:res$ $e$ >>)
 
   (* Specialized functions for +,-,*,/ on literals *)
   | Op2(_loc, "+.", e, Float(locx, x)) | Op2(_loc, "+.", Float(locx, x), e) ->
     let x = <:expr@locx< $flo:x$ >> in
-    with_var_for e (fun e -> <:expr< Filib.Do.add_float $lid:res$ $e$ $x$ >>)
+    use_var_for e (fun e -> <:expr< Filib.Do.add_float $lid:res$ $e$ $x$ >>)
   | Op2(_loc, "*.", e, Float(locx, x)) | Op2(_loc, "*.", Float(locx, x), e) ->
     let x = <:expr@locx< $flo:x$ >> in
-    with_var_for e (fun e -> <:expr< Filib.Do.mul_float $lid:res$ $e$ $x$ >>)
+    use_var_for e (fun e -> <:expr< Filib.Do.mul_float $lid:res$ $e$ $x$ >>)
   | Op2(_loc, "-.", e, Float(locx, x)) ->
     let x = <:expr@locx< $flo:x$ >> in
-    with_var_for e (fun e -> <:expr< Filib.Do.sub_float $lid:res$ $e$ $x$ >>)
+    use_var_for e (fun e -> <:expr< Filib.Do.sub_float $lid:res$ $e$ $x$ >>)
   | Op2(_loc, "-.", Float(locx, x), e) ->
     let x = <:expr@locx< $flo:x$ >> in
-    with_var_for e (fun e -> <:expr< Filib.Do.float_sub $lid:res$ $x$ $e$ >>)
+    use_var_for e (fun e -> <:expr< Filib.Do.float_sub $lid:res$ $x$ $e$ >>)
   | Op2(_loc, "/.", e, Float(locx, x)) ->
     let x = <:expr@locx< $flo:x$ >> in
-    with_var_for e (fun e -> <:expr< Filib.Do.div_float $lid:res$ $e$ $x$ >>)
+    use_var_for e (fun e -> <:expr< Filib.Do.div_float $lid:res$ $e$ $x$ >>)
   | Op2(_loc, "/.", Float(locx, x), e) ->
     let x = <:expr@locx< $flo:x$ >> in
-    with_var_for e (fun e -> <:expr< Filib.Do.float_div $lid:res$ $x$ $e$ >>)
+    use_var_for e (fun e -> <:expr< Filib.Do.float_div $lid:res$ $x$ $e$ >>)
 
   (* Exponentiation *)
   | Op2(_loc, "**", e, Float(locx, x_lit)) ->
     let x = float_of_string x_lit in
     if x = 2. then
-      with_var_for e (fun e -> <:expr< Filib.Do.sqr $lid:res$ $e$ >>)
+      use_var_for e (fun e -> <:expr< Filib.Do.sqr $lid:res$ $e$ >>)
     else
       let trunc_x = truncate x in
       if x = float_of_int trunc_x then
-        with_var_for e (fun e ->
+        use_var_for e (fun e ->
           <:expr< Filib.Do.power $lid:res$ $e$ $`int:trunc_x$ >>)
       else
         let x = const_interval locx x_lit in
-        with_var_for e (fun e -> <:expr< Filib.Do.pow $lid:res$ $e$ $x$ >>)
+        use_var_for e (fun e -> <:expr< Filib.Do.pow $lid:res$ $e$ $x$ >>)
 
   (* Binary operations (general case) *)
   | Op2(_loc, op, Var(locv, v), e) ->
     let v = <:expr@locv< $lid:v$ >> in
-    with_var_for e (fun e -> <:expr< $binary_op _loc op$ $lid:res$ $v$ $e$ >>)
+    use_var_for e (fun e -> <:expr< $binary_op _loc op$ $lid:res$ $v$ $e$ >>)
   | Op2(_loc, op, e, Var(locv, v)) ->
     let v = <:expr@locv< $lid:v$ >> in
-    with_var_for e (fun e -> <:expr< $binary_op _loc op$ $lid:res$ $e$ $v$ >>)
+    use_var_for e (fun e -> <:expr< $binary_op _loc op$ $lid:res$ $e$ $v$ >>)
   | Op2(_loc, op, e1, e2) ->
-    with_var_for e1 (fun e1 ->
-      with_var_for e2 (fun e2 ->
+    use_var_for e1 (fun e1 ->
+      use_var_for e2 (fun e2 ->
         <:expr< $binary_op _loc op$ $lid:res$ $e1$ $e2$ >>))
 
   | Float(_loc, x) -> const_interval _loc x
@@ -331,15 +338,26 @@ let specialize tr expr =
     set r (parse_expr tr e)
   (* Unary ops *)
   | <:expr< $lid:f$ $e$ >> when List.mem f unary_ops ->
-    with_var_for (Op1(_loc, f, parse_expr tr e)) (fun e -> e)
+    (* The temporary var will hold the final value of the expression *)
+    use_var_for ~once:true (Op1(_loc, f, parse_expr tr e)) (fun e -> e)
   (* binary operators (+, ...) *)
   | <:expr< $lid:f$ $e1$ $e2$ >> when List.mem f bin_ops ->
-    with_var_for (Op2(_loc, f, parse_expr tr e1, parse_expr tr e2))
+    use_var_for ~once:true (Op2(_loc, f, parse_expr tr e1, parse_expr tr e2))
       (fun e -> e)
   (* binary relations (<, ...) *)
   | <:expr< $lid:f$ $e1$ $e2$ >> when List.mem f bin_rels ->
-    (* FIXME: ugly hack, empty var *)
-    set "" (Op2(_loc, f, parse_expr tr e1, parse_expr tr e2))
+    (* FIXME: do we allow a configurable policy ? *)
+    use_var_for (parse_expr tr e1) (fun e1 ->
+      use_var_for (parse_expr tr e2) (fun e2 ->
+        match f with
+        | "=" ->  <:expr< Filib.seq $e1$ $e2$ >>
+        | "<>" -> <:expr< Filib.sne $e1$ $e2$ >>
+        | "<" ->  <:expr< Filib.clt $e1$ $e2$ >>
+        | "<=" -> <:expr< Filib.cle $e1$ $e2$ >>
+        | ">" ->  <:expr< Filib.cgt $e1$ $e2$ >>
+        | ">=" -> <:expr< Filib.cge $e1$ $e2$ >>
+        | _ -> assert false (* see [bin_rels] *)
+      ))
 
   (* Explicitely open the module for the functions of the functional
      interface (the ones of the imperative interface are supposed to
