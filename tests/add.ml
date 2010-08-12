@@ -9,11 +9,11 @@ let () =
     (* let tmp = Filib.empty() in *)
     for i = 1 to 100_000_000 do
       (* Filib.Do.add_float a 0.1; *)
-      a <- a +. onetenth;
+      (* a <- a +. onetenth; *)
       (* Filib.Do.add a (Filib.cos a); *)
       (* Filib.Do.cos tmp a;  Filib.Do.add a a tmp; *)
       (* Filib.Do.cos tmp a;  Filib.Do.add_to a tmp; *)
-      (* a <- a +. cos(a); *)
+      a <- a +. cos(a);
     done;
     printf "sum = %a\n" Filib.print a
   )
