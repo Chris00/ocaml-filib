@@ -5,7 +5,7 @@ DOCDIR = ../doc
 
 INSTALL_FILES = META filib.mli filib.cmi filib.cma \
   filib.cmxa filib.a filib_top.cma \
-  filib.cmx dll$(STUBS_LIB).so lib$(STUBS_LIB).a
+  filib.cmx $(wildcard dll$(STUBS_LIB).* lib$(STUBS_LIB).*)
 
 .PHONY: all byte native
 all: byte native
@@ -36,7 +36,7 @@ endif
 
 .PHONY: install uninstall reinstall doc
 
-install: $(INSTALL_FILES)
+install: all
 	$(OCAMLFIND) install $(PKG_NAME) $(INSTALL_FILES)
 
 uninstall:
