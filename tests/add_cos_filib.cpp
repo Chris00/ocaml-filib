@@ -16,7 +16,7 @@ int main(void)
   
   a = interval(0.0);
   for(int i = 0; i < 100000000; i++) {
-    a += onetenth;
+    a += cos(a);
   }
 
   std::cout << "sum = " << a << std::endl;

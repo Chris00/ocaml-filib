@@ -16,7 +16,7 @@ OCAMLINCLUDES = $(SRC)
 $(SOURCES:.ml=.exe): $(SRC)/filib.cma
 $(SOURCES:.ml=.com): $(SRC)/filib.cmxa
 
-add_filib: add_filib.cpp
+%_filib: %_filib.cpp
 	$(CXX) -o $@ $(CXXFLAGS) -I $(FILIB) $^ $(FILIB_LIB)
 
 .PHONY: speed
