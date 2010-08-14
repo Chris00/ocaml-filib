@@ -1,7 +1,7 @@
 ROOT = ..
-include ../Makefile.conf
+include $(ROOT)/Makefile.conf
 STUBS_LIB = filib_stubs
-DOCDIR = ../doc
+DOCDIR = $(ROOT)/doc
 
 INSTALL_FILES = META filib.mli filib.cmi filib.cma \
   filib.cmxa filib.a filib_top.cma \
@@ -12,14 +12,12 @@ all: byte native
 byte: filib.cma filib_top.cma
 native: filib.cmxa
 
-# by default, filib compiles to a static lib which will be included in
-# the OCaml lib.
+# Configure filib with “CXXFLAGS="-fPIC" ./configure --enable-shared”
 filib.cma filib.cmxa: filib.cmo filib.cmx filib_stubs$(OBJ)
-	ocamlmklib -o $(basename $@) -oc $(STUBS_LIB) $^ -lstdc++ \
-	  -cclib $(FILIB_LIB) -custom
+	ocamlmklib -o $(basename $@) -oc $(STUBS_LIB) $^ $(FILIB_LIB)
 
 filib_stubs$(OBJ): filib_stubs.cpp
-	$(CXX) $(CXXFLAGS) -I $(FILIB) -c $<
+	$(CXX) $(CXXFLAGS) -I $(FILIB_INC) -c $<
 
 filib_top.cma: filib_top.cmo
 
@@ -34,9 +32,12 @@ pa_filib.cmo: OCAMLC_FLAGS += -syntax camlp4o
 SYNTAX_OPTS += -syntax camlp4o -package "pa_do.num,camlp4.quotations.o"
 endif
 
+META: META.in filib.mli
+	sed -e "s/@PACKAGE_VERSION@/$(VERSION)/" $< > $@
+
 .PHONY: install uninstall reinstall doc
 
-install: all
+install: all META
 	$(OCAMLFIND) install $(PKG_NAME) $(INSTALL_FILES)
 
 uninstall:
@@ -50,7 +51,7 @@ doc:
 	$(OCAMLDOC) -html -d $(DOCDIR) -colorize-code \
 	  $(OCAML_PACKAGES) $(wildcard *.mli)
 
-include ../Makefile.ocaml
+include $(ROOT)/Makefile.ocaml
 
 clean::
 	$(RM) $(wildcard *.so)

@@ -1,14 +1,20 @@
 ROOT = ..
-include ../Makefile.conf
+include $(ROOT)/Makefile.conf
 SRC = $(ROOT)/src
-PA_DO = $(shell ocamlfind query pa_do)/pa_do.cmo
+#OCAMLPACKS = filib.syntax filib
+PA_DO = $(shell $(OCAMLFIND) query pa_do)/pa_do.cmo
 PP = camlp4o $(PA_DO) nums.cma $(SRC)/pa_filib.cmo
 SOURCES = $(wildcard *.ml *.cpp)
-#OCAMLOPT_FLAGS += -verbose
+OCAMLC_FLAGS += -verbose
+#OCAMLOPT_FLAGS += -syntax camlp4o
 
 .PHONY: all byte native
 all: byte native
 byte: $(SOURCES:.ml=.exe)
+	@echo "**************************************************************"
+	@echo "* If you want to execute the bytecode executables (.exe) use *"
+	@echo "* LD_LIBRARY_PATH=src/ ./test/<progname>.exe                 *"
+	@echo "**************************************************************"
 native: $(subst .cpp,,$(SOURCES:.ml=.com))
 
 # Do not force the package to be installed to compile the tests:
@@ -26,7 +32,7 @@ speed: add.com add_filib
 	@echo "- OCaml version:"
 	@time ./add.com
 
-include ../Makefile.ocaml
+include $(ROOT)/Makefile.ocaml
 
 clean::
 	$(RM) sum

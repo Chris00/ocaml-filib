@@ -16,7 +16,7 @@ RM	?= rm -f --
 # The location of OCaml's library files.
 OCAMLLIBDIR ?= $(shell $(OCAMLC) -where)
 
-OCAMLC_FLAGS ?= -dtypes -principal
+OCAMLC_FLAGS ?= -annot -principal
 OCAMLOPT_FLAGS ?= -dtypes -inline 3
 PP_FLAGS = $(if $(PP), -pp "$(PP)")
 
