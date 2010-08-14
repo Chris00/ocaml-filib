@@ -43,6 +43,8 @@ external inf : 'a t -> float = "filib_caml_inf"
 external sup : 'a t -> float = "filib_caml_sup"
 
 external is_empty : 'a t -> bool = "filib_caml_isEmpty" "noalloc"
+external is_point : 'a t -> bool = "filib_caml_isPoint" "noalloc"
+external is_infinite : 'a t -> bool = "filib_caml_isInfinite" "noalloc"
 
 let to_string i =
   if is_empty i then "[ empty ]"
@@ -54,10 +56,8 @@ let print fmt i =
 
 let pretty_print fmt i =
   if is_empty i then Format.fprintf fmt "[ empty ]"
-  else  Format.fprintf fmt "[%g, %g]@," (inf i) (sup i)
-
-external is_point : 'a t -> bool = "filib_caml_isPoint" "noalloc"
-external is_infinite : 'a t -> bool = "filib_caml_isInfinite" "noalloc"
+  else if is_point i then Format.fprintf fmt "[ %g ]@," (inf i)
+  else Format.fprintf fmt "[%g, %g]@," (inf i) (sup i)
 
 external mid : 'a t -> float = "filib_caml_mid"
 external diam : 'a t -> float = "filib_caml_diam"
