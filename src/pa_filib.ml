@@ -93,10 +93,12 @@ struct
       example, because it is further used in the program). *)
   let use ?(once=false) f =
     let new_var = match !available_vars with
-      | [] -> new_lid() (* Create a new variable *)
+      | [] ->
+        let v = new_lid() (* Create a new variable *) in
+        declared_vars := v :: !declared_vars;
+        v
       | v :: tl -> available_vars := tl; v in
     let e = f new_var in
-    declared_vars := new_var :: !declared_vars;
     if not once then available_vars := new_var :: !available_vars;
     e
 
@@ -249,12 +251,16 @@ let rec use_var_for ?once e f =
     let _loc = loc_of_expr e in
     Var.use ?once (fun v ->
       let code_f = f <:expr< $lid:v$ >> in
-      <:expr< $set v e$;  $code_f$ >>)
+      (* [v] is a fresh temporary var, it contains no important value
+         and is not used in [e], so one can use it in the computations
+         before setting its value. *)
+      <:expr< $set v e ~reuse_var:true$;  $code_f$ >>)
 
 (** @return the code to do [res <- e]. *)
-and set res e =
-  (* Do not add [res] to hold intermediate computations as it may
-     conflict if it is a free var in [e]. *)
+and set ?(reuse_var=false) res e =
+  if reuse_var then Var.add res (fun () -> set_with_result res e)
+  else set_with_result res e
+and set_with_result res e =
   match e with
   | Op1(_loc, lid, e) ->
     let op = match lid with
@@ -335,7 +341,9 @@ let specialize tr expr =
   | <:expr@loc< $flo:x$ >> -> const_interval loc x
   (* Assignment *)
   | <:expr< $lid:r$ <- $e$ >> ->
-    set r (parse_expr tr e)
+    (* The value of [r] may be used in the expression [e], we cannot
+       use it as a temporary variable. *)
+    set r (parse_expr tr e) ~reuse_var:false
   (* Unary ops *)
   | <:expr< $lid:f$ $e$ >> when List.mem f unary_ops ->
     (* The temporary var will hold the final value of the expression *)

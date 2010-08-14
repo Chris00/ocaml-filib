@@ -6,7 +6,7 @@ let sin1 = Filib.(sin 1.)
 
 let () =
   Filib.(
-    let x = sin 1. in
+    let x = sin 1. +. cos 1. in (* requires 2 temp vars *)
     let y = cos 1. in
     (* If the temporary variable containing the value of x is reused
        for y, the value of x will be modified. *)
