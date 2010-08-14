@@ -1,6 +1,6 @@
 # Findlib META file	                                    -*-conf-*-
 name = "filib"
-version = "0.1"
+version = "@PACKAGE_VERSION@"
 description = "Filib++ fast interval library (binding)."
 archive(byte) = "filib.cma"
 archive(byte,toploop) = "filib.cma filib_top.cma"
@@ -8,7 +8,8 @@ archive(native) = "filib.cmxa"
 
 package "syntax" (
   description = "Overloading for Filib expressions"
-  requires = "pa_do, filib, num"
+  version = "@PACKAGE_VERSION@"
+  requires = "pa_do, num"
   archive(syntax,preprocessor) = "pa_filib.cmo"
   archive(byte,toploop) = "pa_filib.cmo"
 )

@@ -15,6 +15,11 @@
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the file
    LICENSE for more details. *)
 
+(** Binding to the Filib++ library.
+
+    @version 0.2
+ *)
+
 type ro
 type rw = private ro
 
