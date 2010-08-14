@@ -220,15 +220,22 @@ let const_interval _loc x_lit =
   with Not_found ->
     let x = new_lid() in
     let x_inf, x_sup = inf_sup x_lit in
-    add_to_beginning_of_file
-      (<:str_item<
-          let $lid:x$ =
-            let x_inf = Int64.float_of_bits $`int64:x_inf$ in
-            let x_sup = Int64.float_of_bits $`int64:x_sup$ in
-            (Filib.interval x_inf x_sup :> Filib.ro_t)
-            >> );
-    Hashtbl.add saved_const_intervals x_lit x;
-    <:expr< $lid:x$ >>
+    if !Sys.interactive then
+      (* In the toploop one must declare the constant on the spot. *)
+      <:expr< let x_inf = Int64.float_of_bits $`int64:x_inf$ in
+              let x_sup = Int64.float_of_bits $`int64:x_sup$ in
+              (Filib.interval x_inf x_sup :> Filib.ro_t) >>
+    else (
+      add_to_beginning_of_file
+        (<:str_item<
+            let $lid:x$ =
+              let x_inf = Int64.float_of_bits $`int64:x_inf$ in
+              let x_sup = Int64.float_of_bits $`int64:x_sup$ in
+              (Filib.interval x_inf x_sup :> Filib.ro_t)
+              >> );
+      Hashtbl.add saved_const_intervals x_lit x;
+      <:expr< $lid:x$ >>
+    )
 ;;
 
 (* Overloading
