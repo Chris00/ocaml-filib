@@ -209,51 +209,51 @@ external superset : 'a t -> 'a t -> bool = "filib_caml_superset" "noalloc"
 
 (** {2 Set relational functions} *)
 
-external seq : 'a t -> 'a t -> bool = "filib_caml_seq"
+external seq : 'a t -> 'b t -> bool = "filib_caml_seq"
 (** [seq a b] returns [true], iff [a] and [b] are equal sets. *)
-external sne : 'a t -> 'a t -> bool = "filib_caml_sne"
+external sne : 'a t -> 'b t -> bool = "filib_caml_sne"
 (** [sne a b] returns [true], iff [a] and [b] are not equal sets. *)
-external sge : 'a t -> 'a t -> bool = "filib_caml_sge"
+external sge : 'a t -> 'b t -> bool = "filib_caml_sge"
 (** [sge a b] returns [true], iff the ≥ relation holds for the bounds:
     [sge a b = inf(a) >= inf(b) && sup(a) >= sup(b)].  It returns [true], if
     [a = ∅] and [b = ∅].  *)
-external sgt : 'a t -> 'a t -> bool = "filib_caml_sgt"
+external sgt : 'a t -> 'b t -> bool = "filib_caml_sgt"
 (** [sgt a b] returns [true], iff the > relation holds for the bounds:
     [sgt a b = inf(a) > inf(b) && sup(a) > sup(b)].  It returns [false],
     if [a = ∅] and [b = ∅].  *)
-external sle : 'a t -> 'a t -> bool = "filib_caml_sle"
+external sle : 'a t -> 'b t -> bool = "filib_caml_sle"
 (** [sle a b] returns [true], iff the ≤ relation holds for the bounds:
     [sle a b = inf(a) <= inf(b) && sup(a) <= sup(b)].  It returns [true],
     if [a = ∅] and [b = ∅].  *)
-external slt : 'a t -> 'a t -> bool = "filib_caml_slt"
+external slt : 'a t -> 'b t -> bool = "filib_caml_slt"
 (** [slt a b] returns [true], iff the < relation holds for the bounds:
     [slt a b = inf(a) < inf(b) && sup(a) < sup(b)].  It return [false],
     if [a = ∅] and [b = ∅]. *)
 
 (** {2 Certainly comparison operators} *)
 
-external ceq : 'a t -> 'a t -> bool = "filib_caml_ceq"
+external ceq : 'a t -> 'b t -> bool = "filib_caml_ceq"
 (** [ceq a b] returns [true], iff the = relation holds for all
     individual points from [a] and [b], i.e. ∀t ∈ a, ∀x ∈ b : t = x.
     That implies that [a] and [b] are point intervals.  Return
     [false], if [a = ∅] or [b = ∅].  *)
-external cne : 'a t -> 'a t -> bool = "filib_caml_cne"
-external cge : 'a t -> 'a t -> bool = "filib_caml_cge"
-external cgt : 'a t -> 'a t -> bool = "filib_caml_cgt"
-external cle : 'a t -> 'a t -> bool = "filib_caml_cle"
-external clt : 'a t -> 'a t -> bool = "filib_caml_clt"
+external cne : 'a t -> 'b t -> bool = "filib_caml_cne"
+external cge : 'a t -> 'b t -> bool = "filib_caml_cge"
+external cgt : 'a t -> 'b t -> bool = "filib_caml_cgt"
+external cle : 'a t -> 'b t -> bool = "filib_caml_cle"
+external clt : 'a t -> 'b t -> bool = "filib_caml_clt"
 
 (** {2 Possibly comparison operators} *)
 
-external peq : 'a t -> 'a t -> bool = "filib_caml_peq"
+external peq : 'a t -> 'b t -> bool = "filib_caml_peq"
 (** [peq a b] returns [true], iff the = relation holds for any points
     from [a] and [b], i.e. ∃t ∈ a, ∃x ∈ b : t = x.  Return false, if
     [a = ∅] or [b = ∅].  *)
-external pne : 'a t -> 'a t -> bool = "filib_caml_pne"
-external pge : 'a t -> 'a t -> bool = "filib_caml_pge"
-external pgt : 'a t -> 'a t -> bool = "filib_caml_pgt"
-external ple : 'a t -> 'a t -> bool = "filib_caml_ple"
-external plt : 'a t -> 'a t -> bool = "filib_caml_plt"
+external pne : 'a t -> 'b t -> bool = "filib_caml_pne"
+external pge : 'a t -> 'b t -> bool = "filib_caml_pge"
+external pgt : 'a t -> 'b t -> bool = "filib_caml_pgt"
+external ple : 'a t -> 'b t -> bool = "filib_caml_ple"
+external plt : 'a t -> 'b t -> bool = "filib_caml_plt"
 
 
 module Do :
