@@ -251,18 +251,20 @@ let saved_const_intervals = Hashtbl.create 10
     interval in which [x_lit] is stored.  It caches the transformation
     at the beginning of the file. *)
 let const_interval _loc x_lit =
-  try
-    let x = Hashtbl.find saved_const_intervals x_lit in
-    <:expr< $lid:x$ >> (* use the current location *)
-  with Not_found ->
-    let x = new_lid() in
+  let x = new_lid() in
+  if !Sys.interactive then
+    (* In the toploop one must declare the constant on the spot. *)
     let x_inf, x_sup = inf_sup x_lit in
-    if !Sys.interactive then
-      (* In the toploop one must declare the constant on the spot. *)
-      <:expr< let x_inf = Int64.float_of_bits $`int64:x_inf$ in
-              let x_sup = Int64.float_of_bits $`int64:x_sup$ in
-              (Filib.interval x_inf x_sup :> Filib.ro_t) >>
-    else (
+    let a = new_lid() and b = new_lid() in
+    <:expr< let $lid:a$ = Int64.float_of_bits $`int64:x_inf$ in
+            let $lid:b$ = Int64.float_of_bits $`int64:x_sup$ in
+            (Filib.interval $lid:a$ $lid:b$ :> Filib.ro_t) >>
+  else (
+    try
+      let x = Hashtbl.find saved_const_intervals x_lit in
+      <:expr< $lid:x$ >> (* use the current location *)
+    with Not_found ->
+      let x_inf, x_sup = inf_sup x_lit in
       add_to_beginning_of_file
         (<:str_item<
             let $lid:x$ =
@@ -272,7 +274,7 @@ let const_interval _loc x_lit =
               >> );
       Hashtbl.add saved_const_intervals x_lit x;
       <:expr< $lid:x$ >>
-    )
+  )
 ;;
 
 (* Overloading
