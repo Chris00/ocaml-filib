@@ -168,15 +168,19 @@ let num_of_literal lit =
   let len = String.length lit in
   let neg = lit.[0] = '-' in
   let start = if neg then 1 else 0 in
-  let dot = String.index lit '.' in
   let e =
     try String.index lit 'e'
     with Not_found ->
       try String.index lit 'E' with Not_found -> len in
-  let m1 = String.sub lit start (dot - start)
-  and m2 = String.sub lit (dot + 1) (e - dot - 1) in
-  let m2_len = String.length m2 in
-  let mantissa = Num.(of_string (m1 ^ m2) / (10**(of_int m2_len))) in
+  (* Beware that, with the scientific notation, there is no garantee
+     of a dot in the literal (e.g. "1e3" is OK). *)
+  let dot, decimals =
+    try  let d = String.index lit '.' in d, e - 1 - d
+    with Not_found -> e, 0 in
+  let m1 = String.sub lit start (dot - start) in
+  let m =
+    if decimals > 0 then m1 ^ String.sub lit (dot + 1) decimals else m1 in
+  let mantissa = Num.(of_string m / (10**(of_int decimals))) in
   let n =
     if e = len then mantissa
     else
