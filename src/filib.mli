@@ -17,7 +17,7 @@
 
 (** Binding to the Filib++ library.
 
-    @version 0.2
+    @version 0.3
  *)
 
 type ro
