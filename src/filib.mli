@@ -37,6 +37,15 @@ val empty : unit -> rw t
 val entire : unit -> rw t
 (** [entire()] returns a new interval, initially equal to [[-∞, ∞]]. *)
 
+val zero : unit -> rw t
+(** [zero()] returns a new interval, initially equal to [[0., 0.]]. *)
+
+val one : unit -> rw t
+(** [one()] returns a new interval, initially equal to [[1., 1.]]. *)
+
+val pi : unit -> rw t
+(** [pi()] returns a new interval, initially enclosing π. *)
+
 val of_float : float -> rw t
 (** [of_float a] returns a new interval initialized to [[a,a]].
     Beware that the value of [a] may be different from the literal in

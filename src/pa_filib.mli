@@ -20,6 +20,11 @@ val t : Pa_do.Delimited_overloading.t
     writing expressions involving intervals and floating point
     numbers.
 
+    This syntax extension overload the float literals and arithmeric
+    operators.  Integer literals and operators keep their default
+    interpretation which allows to easily write recursive functions
+    whose termination depend on integer arithmetic.
+
     The syntax extension will introduce temporary variables as
     necessary.  For example [Filib.(1. +. cos 1.)] will first put [cos
     1.] in a temporary variable, then add [1.] to that variable (in an
