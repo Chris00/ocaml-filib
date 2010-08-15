@@ -265,6 +265,9 @@ let rec use_var_for ?once e f =
   match e with
   | Float(_loc, x) -> f (const_interval _loc x)
   | Var(_loc, v) -> f <:expr< $lid:v$ >> (* use the var *)
+  | Op1(_loc, op, e) when List.mem op unary_ops_float ->
+    (* If [op] returns a float, we do not need to hold its value in a var *)
+    f (use_var_for e (fun e -> <:expr< $qualify_lid op filib _loc$ $e$ >>))
   | _ ->
     let _loc = loc_of_expr e in
     Var.use ?once (fun v ->
