@@ -30,23 +30,24 @@ let filib_do = Macro.Module_longident.of_string "Filib.Do"
 
 let bin_rels = [ "="; "<>"; "<"; "<="; ">"; ">="]
 let bin_ops_infix = [ "+."; "-."; "*."; "/."; "**"]
-let bin_ops_prefix = [ "min"; "max"; "hull" ]
+let bin_ops_prefix = [ "min"; "max"; "hull"; "interval" ]
 let bin_ops = bin_ops_infix @ bin_ops_prefix
 
+let unary_ops_float = [ (* unary operators that return a float *)
+  "inf"; "sup"; "mid"; "diam"; "rel_diam"; "rad"; "mig"; "mag" ]
 let unary_ops_ascii = [
   "abs"; "acos"; "acosh"; "acoth"; "asin"; "asinh"; "atan"; "atanh";
   "cos"; "cosh"; "cot"; "coth"; "exp"; "exp10"; "exp2"; "expm1";
   "log"; "log10"; "log1p"; "log2"; "sin"; "sinh"; "sqr"; "sqrt";
-  "tan"; "tanh" ]
+  "tan"; "tanh" ] @ unary_ops_float
 
 let unary_ops = "~-" :: unary_ops_ascii
 
 let open_for = [
-  "empty"; "entire"; "of_float"; "interval"; "copy"; "inf"; "sup";
+  "empty"; "entire"; "of_float"; "interval"; "copy";
   "to_string"; "print"; "pretty_print";
-  "is_empty"; "is_point"; "is_infinite";
-  "mid"; "diam"; "rel_diam"; "rad"; "mig"; "mag" ]
-  @ unary_ops_ascii
+  "is_empty"; "is_point"; "is_infinite" ]
+  @ bin_ops_prefix @ unary_ops_ascii
 
 
 (** Functions to manage sets of temporary variables needed to compute
@@ -125,7 +126,7 @@ let loc_of_expr = function
   | Float(l,_) | Var(l,_) | Op1(l,_,_) | Op2(l,_,_,_) -> l
   | Unknown e -> Ast.loc_of_expr e
 
-let binary_op _loc lid = match lid with
+let binary_do_op _loc lid = match lid with
   (* specializations used below *)
   | "+." -> <:expr< Filib.Do.add >>
   | "-." -> <:expr< Filib.Do.sub >>
@@ -196,17 +197,27 @@ let inf_sup lit =
   else begin
     let e, m = exponent n in
     (* FIXME: denormalized numbers and infinites *)
-    eprintf ">>> %s => e = %i, m = %s " lit e Num.(to_string m);
+    (* eprintf ">>> %s => e = %i, m = %s " lit e Num.(to_string m); *)
     let e = e - emin + 1 in
     let f = Int64.(f lor (of_int e lsl 52)) in
     let m = Num.((m - 1) * shift_mantissa) in
     let m_inf = Num.(to_int(floor m))
     and m_sup = Num.(to_int(ceil m)) in
-    eprintf "in [%i, %i] * 2^-52\n" m_inf m_sup;
+    (* eprintf "in [%i, %i] * 2^-52\n" m_inf m_sup; *)
     let f_inf = Int64.(f lor (of_int m_inf))
     and f_sup = Int64.(f lor (of_int m_sup)) in
     if neg then f_sup, f_inf else f_inf, f_sup
   end
+
+let is_exactly_representable lit =
+  let inf, sup = inf_sup lit in
+  Int64.(inf = sup)
+
+let raise_if_not_exactly_representable _loc lit =
+  if not(is_exactly_representable lit) then
+    let msg = sprintf "The number %s is not exactly representable as a \
+	floating point.  Use `hull' instead of `interval'" lit in
+    Loc.raise _loc (Stream.Error msg)
 
 let saved_const_intervals = Hashtbl.create 10
 
@@ -309,17 +320,24 @@ and set_with_result res e =
         let x = const_interval locx x_lit in
         use_var_for e (fun e -> <:expr< Filib.Do.pow $lid:res$ $e$ $x$ >>)
 
+  (* Interval creation.  Do not introduce variables for the float
+     arguments but overload them as [interval (inf x) (mid y)] is possible. *)
+  | Op2(_loc, "interval", Float(locx, x), Float(locy, y)) ->
+    raise_if_not_exactly_representable locx x;
+    raise_if_not_exactly_representable locy y;
+    <:expr< Filib.interval $flo:x$ $flo:y$ >>
+
   (* Binary operations (general case) *)
   | Op2(_loc, op, Var(locv, v), e) ->
     let v = <:expr@locv< $lid:v$ >> in
-    use_var_for e (fun e -> <:expr< $binary_op _loc op$ $lid:res$ $v$ $e$ >>)
+    use_var_for e (fun e -> <:expr< $binary_do_op _loc op$ $lid:res$ $v$ $e$ >>)
   | Op2(_loc, op, e, Var(locv, v)) ->
     let v = <:expr@locv< $lid:v$ >> in
-    use_var_for e (fun e -> <:expr< $binary_op _loc op$ $lid:res$ $e$ $v$ >>)
+    use_var_for e (fun e -> <:expr< $binary_do_op _loc op$ $lid:res$ $e$ $v$ >>)
   | Op2(_loc, op, e1, e2) ->
     use_var_for e1 (fun e1 ->
       use_var_for e2 (fun e2 ->
-        <:expr< $binary_op _loc op$ $lid:res$ $e1$ $e2$ >>))
+        <:expr< $binary_do_op _loc op$ $lid:res$ $e1$ $e2$ >>))
 
   | Float(_loc, x) -> const_interval _loc x
   | Var(_loc, v) ->
