@@ -118,7 +118,7 @@ struct
 end
 
 (** The proper way to raise exceptions in this syntax extension (to
-    play well i the toploop). *)
+    play well in the toploop). *)
 let raise loc e =
   (* When an exception is raised, the temp vars will not be declared
      but the next toplevel expression must start in a clean state. *)
