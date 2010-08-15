@@ -41,7 +41,7 @@ let unary_ops_ascii = [
   "log"; "log10"; "log1p"; "log2"; "sin"; "sinh"; "sqr"; "sqrt";
   "tan"; "tanh" ] @ unary_ops_float
 
-let unary_ops = "~-" :: unary_ops_ascii
+let unary_ops = "~-." :: unary_ops_ascii
 
 let open_for = [
   "empty"; "entire"; "zero"; "one"; "pi"; "infinity"; "neg_infinity";
@@ -131,7 +131,7 @@ let raise loc e =
 type expr =
 | Float of Loc.t * string      (* float constant *)
 | Var of Loc.t * string        (* variable (lowercase identifier) *)
-| Op1 of Loc.t * string * expr (* unary operation (inclusing "~-") *)
+| Op1 of Loc.t * string * expr (* unary operation (inclusing "~-.") *)
 | Op2 of Loc.t * string * expr * expr (* binary op, including "+",... *)
 | Unknown of Ast.expr          (* unknown term *)
 
@@ -319,7 +319,7 @@ and set_with_result res e =
   match e with
   | Op1(_loc, lid, e) ->
     let op = match lid with
-      | "~-" -> <:expr< Filib.Do.neg >>
+      | "~-." -> <:expr< Filib.Do.neg >>
       | _ -> qualify_lid lid filib_do _loc in
     use_var_for e (fun e -> <:expr< $op$ $lid:res$ $e$ >>)
 
