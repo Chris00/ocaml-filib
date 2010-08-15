@@ -101,6 +101,13 @@ EXPORT(interval)(value va, value vb)
   CAMLreturn(vi);
 }
 
+EXPORT(do_interval)(value vy, value va, value vb)
+{
+  /* noalloc */
+  I_VAL(vy) = interval(Double_val(va), Double_val(vb));
+  return(Val_unit);
+}
+
 EXPORT(inf)(value vi)
 {
   CAMLparam1(vi);

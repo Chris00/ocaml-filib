@@ -143,6 +143,8 @@ external plt : 'a t -> 'b t -> bool = "filib_caml_plt"
 module Do =
 struct
 
+  external interval : rw t -> float -> float -> unit
+    = "filib_caml_do_interval" "noalloc"
   external copy : rw t -> 'a t -> unit = "filib_caml_do_copy" "noalloc"
 
   external neg : rw t -> 'a t -> unit = "filib_caml_do_neg" "noalloc"

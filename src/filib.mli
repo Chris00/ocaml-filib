@@ -259,6 +259,9 @@ external plt : 'a t -> 'b t -> bool = "filib_caml_plt"
 module Do :
 sig
 
+  external interval : rw t -> float -> float -> unit
+    = "filib_caml_do_interval" "noalloc"
+
   external copy : rw t -> 'a t -> unit = "filib_caml_do_copy" "noalloc"
   (** [copy y x] performs [y <- x]. *)
 
