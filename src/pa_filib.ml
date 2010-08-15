@@ -363,7 +363,7 @@ and set_with_result res e =
   | Op2(_loc, "interval", Float(locx, x), Float(locy, y)) ->
     let x = exact_representation locx x in
     let y = exact_representation locy y in
-    <:expr< Filib.interval $x$ $y$ >>
+    <:expr< Filib.Do.interval $lid:res$ $x$ $y$ >>
 
   (* Binary operations (general case) *)
   | Op2(_loc, op, Var(locv, v), e) ->
