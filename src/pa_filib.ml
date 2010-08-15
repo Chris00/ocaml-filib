@@ -70,6 +70,10 @@ struct
     assert(!available_vars = [] && !declared_vars = []);
     incr level
 
+  let clear() =
+    declared_vars := [];
+    available_vars := []
+
   let letin e =
     decr level; (* leave the current overloading *)
     if !level = 0 then (* outer overloading => declare vars *)
@@ -77,8 +81,7 @@ struct
         let _loc = Ast.loc_of_expr e in
         <:expr< let $lid:v$ = Filib.empty() in $e$ >> in
       let e = List.fold_left declare e !declared_vars in
-      declared_vars := [];
-      available_vars := [];
+      clear();
       e
     else e
 
@@ -113,6 +116,14 @@ struct
     available_vars := List.tl !available_vars;
     e
 end
+
+(** The proper way to raise exceptions in this syntax extension (to
+    play well i the toploop). *)
+let raise loc e =
+  (* When an exception is raised, the temp vars will not be declared
+     but the next toplevel expression must start in a clean state. *)
+  Var.clear();
+  Loc.raise loc e
 
 
 type expr =
@@ -232,7 +243,7 @@ let exact_representation _loc x_lit =
   else
     let msg = sprintf "The number %s is not exactly representable as a \
 	floating point.  Use \"hull\" instead of \"interval\"" x_lit in
-    Loc.raise _loc (Stream.Error msg)
+    raise _loc (Stream.Error msg)
 
 let saved_const_intervals = Hashtbl.create 10
 
