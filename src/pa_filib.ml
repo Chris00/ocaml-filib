@@ -44,7 +44,8 @@ let unary_ops_ascii = [
 let unary_ops = "~-" :: unary_ops_ascii
 
 let open_for = [
-  "empty"; "entire"; "of_float"; "interval"; "copy";
+  "empty"; "entire"; "zero"; "one"; "pi"; "infinity"; "neg_infinity";
+  "of_float"; "interval"; "copy";
   "to_string"; "print"; "pretty_print";
   "is_empty"; "is_point"; "is_infinite" ]
   @ bin_ops_prefix @ unary_ops_ascii
