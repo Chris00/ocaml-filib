@@ -209,14 +209,29 @@ let inf_sup lit =
     if neg then f_sup, f_inf else f_inf, f_sup
   end
 
-let is_exactly_representable lit =
-  let inf, sup = inf_sup lit in
-  Int64.(inf = sup)
+let saved_point_intervals = Hashtbl.create 10
 
-let raise_if_not_exactly_representable _loc lit =
-  if not(is_exactly_representable lit) then
+let is_exactly_representable lit =
+  let inf, sup = inf_sup lit in Int64.(inf = sup)
+
+let exact_representation _loc x_lit =
+  let inf, sup = inf_sup x_lit in
+  if Int64.(inf = sup) then (* representation of [x_lit] is exact *)
+    if !Sys.interactive then
+      <:expr< Int64.float_of_bits $`int64:inf$ >>
+    else (
+      try
+        <:expr< $lid:Hashtbl.find saved_point_intervals x_lit$ >>
+      with Not_found ->
+        let x = new_lid() in
+        add_to_beginning_of_file
+          (<:str_item< let $lid:x$ = Int64.float_of_bits $`int64:inf$ >>);
+        Hashtbl.add saved_point_intervals x_lit x;
+        <:expr< $lid:x$ >>
+    )
+  else
     let msg = sprintf "The number %s is not exactly representable as a \
-	floating point.  Use `hull' instead of `interval'" lit in
+	floating point.  Use \"hull\" instead of \"interval\"" x_lit in
     Loc.raise _loc (Stream.Error msg)
 
 let saved_const_intervals = Hashtbl.create 10
@@ -290,23 +305,25 @@ and set_with_result res e =
     use_var_for e (fun e -> <:expr< $op$ $lid:res$ $e$ >>)
 
   (* Specialized functions for +,-,*,/ on literals *)
-  | Op2(_loc, "+.", e, Float(locx, x)) | Op2(_loc, "+.", Float(locx, x), e) ->
-    let x = <:expr@locx< $flo:x$ >> in
+  | Op2(_loc, "+.", e, Float(locx, x)) | Op2(_loc, "+.", Float(locx, x), e)
+      when is_exactly_representable x ->
+    let x = exact_representation locx x in
     use_var_for e (fun e -> <:expr< Filib.Do.add_float $lid:res$ $e$ $x$ >>)
-  | Op2(_loc, "*.", e, Float(locx, x)) | Op2(_loc, "*.", Float(locx, x), e) ->
-    let x = <:expr@locx< $flo:x$ >> in
+  | Op2(_loc, "*.", e, Float(locx, x)) | Op2(_loc, "*.", Float(locx, x), e)
+      when is_exactly_representable x ->
+    let x = exact_representation locx x in
     use_var_for e (fun e -> <:expr< Filib.Do.mul_float $lid:res$ $e$ $x$ >>)
-  | Op2(_loc, "-.", e, Float(locx, x)) ->
-    let x = <:expr@locx< $flo:x$ >> in
+  | Op2(_loc, "-.", e, Float(locx, x)) when is_exactly_representable x ->
+    let x = exact_representation locx x in
     use_var_for e (fun e -> <:expr< Filib.Do.sub_float $lid:res$ $e$ $x$ >>)
-  | Op2(_loc, "-.", Float(locx, x), e) ->
-    let x = <:expr@locx< $flo:x$ >> in
+  | Op2(_loc, "-.", Float(locx, x), e) when is_exactly_representable x ->
+    let x = exact_representation locx x in
     use_var_for e (fun e -> <:expr< Filib.Do.float_sub $lid:res$ $x$ $e$ >>)
-  | Op2(_loc, "/.", e, Float(locx, x)) ->
-    let x = <:expr@locx< $flo:x$ >> in
+  | Op2(_loc, "/.", e, Float(locx, x)) when is_exactly_representable x ->
+    let x = exact_representation locx x in
     use_var_for e (fun e -> <:expr< Filib.Do.div_float $lid:res$ $e$ $x$ >>)
-  | Op2(_loc, "/.", Float(locx, x), e) ->
-    let x = <:expr@locx< $flo:x$ >> in
+  | Op2(_loc, "/.", Float(locx, x), e) when is_exactly_representable x ->
+    let x = exact_representation locx x in
     use_var_for e (fun e -> <:expr< Filib.Do.float_div $lid:res$ $x$ $e$ >>)
 
   (* Exponentiation *)
@@ -326,9 +343,9 @@ and set_with_result res e =
   (* Interval creation.  Do not introduce variables for the float
      arguments but overload them as [interval (inf x) (mid y)] is possible. *)
   | Op2(_loc, "interval", Float(locx, x), Float(locy, y)) ->
-    raise_if_not_exactly_representable locx x;
-    raise_if_not_exactly_representable locy y;
-    <:expr< Filib.interval $flo:x$ $flo:y$ >>
+    let x = exact_representation locx x in
+    let y = exact_representation locy y in
+    <:expr< Filib.interval $x$ $y$ >>
 
   (* Binary operations (general case) *)
   | Op2(_loc, op, Var(locv, v), e) ->
