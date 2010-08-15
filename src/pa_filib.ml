@@ -123,6 +123,7 @@ let raise loc e =
   (* When an exception is raised, the temp vars will not be declared
      but the next toplevel expression must start in a clean state. *)
   Var.clear();
+  Var.level := 0;
   Loc.raise loc e
 
 
