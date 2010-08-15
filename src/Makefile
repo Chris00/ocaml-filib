@@ -25,7 +25,7 @@ ifneq "$(shell  ocamlfind query pa_do 2> /dev/null)" ""
 OCAMLPACKS += pa_do
 byte: pa_filib.cmo
 #PP = camlp4 -parser oq -parser op pr_dump.cmo
-INSTALL_FILES += pa_filib.cmo
+INSTALL_FILES += pa_filib.cmo pa_filib.cmi pa_filib.mli
 pa_filib.cmo: OCAMLPACKS += pa_do.num,camlp4.quotations.o
 pa_filib.cmo: OCAMLC_FLAGS += -syntax camlp4o
 # For ocamldep:
