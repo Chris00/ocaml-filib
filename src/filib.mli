@@ -56,8 +56,9 @@ val of_float : float -> rw t
 (** [of_float a] returns a new interval initialized to [[a,a]].
     Beware that the value of [a] may be different from the literal in
     your code.  For example, [of_float 0.1] will not contain the real
-    0.1 because [0.1] in your code will be rounded to the nearest
-    float.  To avoid such mistakes, use the syntax extension. *)
+    number 0.1 because the literal [0.1] in your code will be rounded
+    to the nearest float by the compiler.  To avoid such mistakes, it
+    is strongly recommended to use the syntax extension. *)
 
 val interval : float -> float -> rw t
 (** [interval a b] returns a new interval initialized with [[a,b]].
