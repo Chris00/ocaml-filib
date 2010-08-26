@@ -282,6 +282,9 @@ sig
   external copy : rw t -> 'a t -> unit = "filib_caml_do_copy" "noalloc"
   (** [copy y x] performs [y <- x]. *)
 
+  external pi : rw t -> unit = "filib_caml_do_PI" "noalloc"
+  (** [pi y] performs [y <- pi]. *)
+
   external neg : rw t -> 'a t -> unit = "filib_caml_do_neg" "noalloc"
   (** Unary negation. *)
 

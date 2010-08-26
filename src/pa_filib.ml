@@ -132,12 +132,13 @@ let raise loc e =
 type expr =
 | Float of Loc.t * string      (* float constant *)
 | Var of Loc.t * string        (* variable (lowercase identifier) *)
+| Op0 of Loc.t * string        (* constants, e.g. [pi] *)
 | Op1 of Loc.t * string * expr (* unary operation (inclusing "~-.") *)
 | Op2 of Loc.t * string * expr * expr (* binary op, including "+",... *)
 | Unknown of Ast.expr          (* unknown term *)
 
 let loc_of_expr = function
-  | Float(l,_) | Var(l,_) | Op1(l,_,_) | Op2(l,_,_,_) -> l
+  | Float(l,_) | Var(l,_) | Op0(l, _) | Op1(l,_,_) | Op2(l,_,_,_) -> l
   | Unknown e -> Ast.loc_of_expr e
 
 let binary_do_op _loc lid = match lid with
@@ -389,6 +390,10 @@ and set_with_result res e =
       use_var_for e2 (fun e2 ->
         <:expr< $binary_do_op _loc op$ $lid:res$ $e1$ $e2$ >>))
 
+  | Op0(_loc, op) ->
+    (match op with
+    | "pi" -> <:expr< Filib.Do.pi $lid:res$ >>
+    | _ -> assert false)
   | Float(_loc, x) ->
     <:expr< Filib.Do.copy $lid:res$ $const_interval _loc x$ >>
   | Var(_loc, v) ->
@@ -407,6 +412,8 @@ let rec parse_expr tr = function
     Op2(loc, op, parse_expr tr e1, parse_expr tr e2)
   | <:expr@loc< $lid:op$ $e1$ >> when List.mem op unary_ops ->
     Op1(loc, op, parse_expr tr e1)
+  | <:expr@loc< pi >> ->
+    Op0(loc, "pi")
   | <:expr@loc< $lid:op$ >> ->
     if List.mem op open_for then Unknown(qualify_lid op filib loc)
     else Var(loc, op)
