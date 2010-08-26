@@ -66,14 +66,24 @@ DO(tozero)
 DO(tonearest)
 DO(reset)
 
-#define NEW_INTERVAL(name, f)                   \
-  EXPORT(name)(value v)                         \
+#define MAKE_NEW_INTERVAL(name, f)              \
+  EXPORT(name)(value vx)                        \
   {                                             \
-    CAMLparam1(v);                              \
+    CAMLparam1(vx);                             \
     CAMLlocal1(vi);                             \
     I_SET(vi, f);                               \
     CAMLreturn(vi);                             \
   }
+#define DO_NEW_INTERVAL(name, f)                \
+  EXPORT(do_ ## name)(value vy)                 \
+  {                                             \
+    /* noalloc */                               \
+    I_VAL(vy) = f;                              \
+    return(Val_unit);                           \
+  }
+#define NEW_INTERVAL(name, f)                   \
+  MAKE_NEW_INTERVAL(name, f)                    \
+  DO_NEW_INTERVAL(name, f)
 
 NEW_INTERVAL(EMPTY,     interval::EMPTY())
 NEW_INTERVAL(ENTIRE,    interval::ENTIRE())
@@ -83,8 +93,8 @@ NEW_INTERVAL(ZERO,      interval::ZERO())
 NEW_INTERVAL(ONE,       interval::ONE())
 NEW_INTERVAL(PI,        interval::PI())
 
-NEW_INTERVAL(of_float,  interval(Double_val(v)))
-NEW_INTERVAL(copy,      interval(I_VAL(v)))
+MAKE_NEW_INTERVAL(of_float,  interval(Double_val(vx)))
+MAKE_NEW_INTERVAL(copy,      interval(I_VAL(vx)))
 
 EXPORT(do_copy)(value vy, value vx)
 {

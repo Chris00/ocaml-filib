@@ -152,6 +152,8 @@ struct
     = "filib_caml_do_interval" "noalloc"
   external copy : rw t -> 'a t -> unit = "filib_caml_do_copy" "noalloc"
 
+  external pi : rw t -> unit = "filib_caml_do_PI" "noalloc"
+
   external neg : rw t -> 'a t -> unit = "filib_caml_do_neg" "noalloc"
 
   external add : rw t -> 'a t -> 'b t -> unit = "filib_caml_do_add" "noalloc"
