@@ -33,7 +33,12 @@ external neg_infinity : unit -> rw t = "filib_caml_NEG_INFTY"
 external infinity : unit -> rw t = "filib_caml_POS_INFTY"
 external zero : unit -> rw t = "filib_caml_ZERO"
 external one : unit -> rw t = "filib_caml_ONE"
-external pi : unit -> rw t = "filib_caml_PI"
+external make_pi : unit -> rw t = "filib_caml_PI"
+
+(* It is better to have [pi] as a constant to use in formulae
+   (especially convenient because the local open will mask a [pi] that
+   the code would define). *)
+let pi = (make_pi() :> ro t)
 
 external of_float : float -> rw t = "filib_caml_of_float"
 external interval : float -> float -> rw t = "filib_caml_interval"

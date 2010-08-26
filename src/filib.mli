@@ -43,14 +43,15 @@ val zero : unit -> rw t
 val one : unit -> rw t
 (** [one()] returns a new interval, initially equal to [[1., 1.]]. *)
 
-val pi : unit -> rw t
-(** [pi()] returns a new interval, initially enclosing π. *)
+val pi : ro t
+(** [pi] an interval enclosing π. *)
 
 val infinity : unit -> rw t
-(** [infinity()] returns a new interval, initially equal to [[+∞, +∞]]. *)
+(** [infinity()] returns a new interval, initially equal to [[1.79769e+308, +∞]]. *)
 
 val neg_infinity : unit -> rw t
-(** [neg_infinity()] returns a new interval, initially equal to [[-∞, -∞]]. *)
+(** [neg_infinity()] returns a new interval, initially equal to [[-∞,
+    -1.79769e+308]]. *)
 
 val of_float : float -> rw t
 (** [of_float a] returns a new interval initialized to [[a,a]].
