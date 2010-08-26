@@ -407,8 +407,10 @@ let rec parse_expr tr = function
     Op2(loc, op, parse_expr tr e1, parse_expr tr e2)
   | <:expr@loc< $lid:op$ $e1$ >> when List.mem op unary_ops ->
     Op1(loc, op, parse_expr tr e1)
-  | <:expr@loc< $lid:op$ >> -> Var(loc, op)
-        (* FIXME: the notion of variable should be generalized e.g. to x.z *)
+  | <:expr@loc< $lid:op$ >> ->
+    if List.mem op open_for then Unknown(qualify_lid op filib loc)
+    else Var(loc, op)
+      (* FIXME: the notion of variable should be generalized e.g. to x.z *)
   | e -> Unknown((self tr)#expr e)
 
 let specialize tr expr =
