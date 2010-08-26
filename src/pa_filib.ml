@@ -389,7 +389,8 @@ and set_with_result res e =
       use_var_for e2 (fun e2 ->
         <:expr< $binary_do_op _loc op$ $lid:res$ $e1$ $e2$ >>))
 
-  | Float(_loc, x) -> const_interval _loc x
+  | Float(_loc, x) ->
+    <:expr< Filib.Do.copy $lid:res$ $const_interval _loc x$ >>
   | Var(_loc, v) ->
     if res = v then <:expr< >> (* nothing to do *)
     else <:expr< Filib.Do.copy $lid:res$ $lid:v$ >>
