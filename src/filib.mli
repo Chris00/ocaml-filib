@@ -159,7 +159,9 @@ external cot : 'a t -> rw t = "filib_caml_cot"
 external coth : 'a t -> rw t = "filib_caml_coth"
 external exp : 'a t -> rw t = "filib_caml_exp"
 external exp10 : 'a t -> rw t = "filib_caml_exp10"
+(** [exp10 a] returns [10.**a]. *)
 external exp2 : 'a t -> rw t = "filib_caml_exp2"
+(** [exp2 a] returns [2.**a]. *)
 external expm1 : 'a t -> rw t = "filib_caml_expm1"
 external log : 'a t -> rw t = "filib_caml_log"
 external log10 : 'a t -> rw t = "filib_caml_log10"

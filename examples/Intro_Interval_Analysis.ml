@@ -32,3 +32,17 @@ let wide_V, narrow_V =
 (* To see more digits, convert it to a string *)
 I.(to_string narrow_V);;
 
+(* Exercise 5.1, p. 39. *)
+let x = I.(interval (-1.) 1.);;
+I.(x**2.);;
+I.(x *. x);;
+
+(* Exercise 5.2, p. 40. *)
+I.(let b = interval 4. 8. in
+   let sn = exp10(interval 20. 25. /. 10.) in
+   b *. log2(1. +. sn));;
+
+(* Exercise 5.4, p. 40. *)
+I.(let h1 = interval 1000. 1500. in
+   let h2 = interval 20. 50. in
+   sqrt(2. *. h1) +. sqrt(2. *. h2));;
