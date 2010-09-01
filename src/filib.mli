@@ -280,6 +280,11 @@ sig
 
   external interval : rw t -> float -> float -> unit
     = "filib_caml_do_interval" "noalloc"
+  (** [interval y a b] changes the bounds of the interval [y] so that
+      they become [a] and [b]. *)
+
+  external inf : rw t -> float -> unit = "filib_caml_do_inf" "noalloc"
+  external sup : rw t -> float -> unit = "filib_caml_do_sup" "noalloc"
 
   external copy : rw t -> 'a t -> unit = "filib_caml_do_copy" "noalloc"
   (** [copy y x] performs [y <- x]. *)

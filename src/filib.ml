@@ -150,6 +150,8 @@ struct
 
   external interval : rw t -> float -> float -> unit
     = "filib_caml_do_interval" "noalloc"
+  external inf : rw t -> float -> unit = "filib_caml_do_inf" "noalloc"
+  external sup : rw t -> float -> unit = "filib_caml_do_sup" "noalloc"
   external copy : rw t -> 'a t -> unit = "filib_caml_do_copy" "noalloc"
 
   external pi : rw t -> unit = "filib_caml_do_PI" "noalloc"

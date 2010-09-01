@@ -130,6 +130,19 @@ EXPORT(sup)(value vi)
   CAMLreturn(caml_copy_double(filib::sup(I_VAL(vi))));
 }
 
+EXPORT(do_inf)(value vy, value vb)
+{
+  /* noalloc */
+  I_VAL(vy) = interval(Double_val(vb), sup(I_VAL(vy)));
+  return(Val_unit);
+}
+
+EXPORT(do_sup)(value vy, value vb)
+{
+  /* noalloc */
+  I_VAL(vy) = interval(inf(I_VAL(vy)), Double_val(vb));
+  return(Val_unit);
+}
 
 EXPORT(do_add_to)(value va, value vb)
 {
