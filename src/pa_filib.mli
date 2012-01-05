@@ -16,7 +16,7 @@
    LICENSE for more details. *)
 
 val t : Pa_do.Delimited_overloading.t
-(** This syntax extension provides a convenient ans {i safe} way of
+(** This syntax extension provides a convenient and {i safe} way of
     writing expressions involving intervals and floating point
     numbers.
 
