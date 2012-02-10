@@ -90,7 +90,7 @@ external is_point : 'a t -> bool = "filib_caml_isPoint" "noalloc"
 external is_infinite : 'a t -> bool = "filib_caml_isInfinite" "noalloc"
 
 external mid : 'a t -> float = "filib_caml_mid"
-(** [mif i] returns an approximation of the midpoint of [i], that is
+(** [mid i] returns an approximation of the midpoint of [i], that is
     contained in [i].  The following cases are distinguished:
     {[
     mid i = NaN   if i = ∅
@@ -131,10 +131,10 @@ external mag : 'a t -> float = "filib_caml_mag"
 
 (** {2 Arithmetic operations} *)
 
-external add : 'a t -> 'a t -> rw t = "filib_caml_add"
-external sub : 'a t -> 'a t -> rw t = "filib_caml_sub"
-external mul : 'a t -> 'a t -> rw t = "filib_caml_mul"
-external div : 'a t -> 'a t -> rw t = "filib_caml_div"
+external add : 'a t -> 'b t -> rw t = "filib_caml_add"
+external sub : 'a t -> 'b t -> rw t = "filib_caml_sub"
+external mul : 'a t -> 'b t -> rw t = "filib_caml_mul"
+external div : 'a t -> 'b t -> rw t = "filib_caml_div"
 
 
 (** {2 Elementary functions} *)
@@ -178,17 +178,17 @@ external tanh : 'a t -> rw t = "filib_caml_tanh"
 
 (** {2 Set Theoretic functions} *)
 
-external min : 'a t -> 'a t -> rw t = "filib_caml_imin"
+external min : 'a t -> 'b t -> rw t = "filib_caml_imin"
 (** [min a b] returns an enclosure of the interval of all minima of
     [a] and [b], i.e. [min a b = {min{x,y} | x ∈ a, y ∈ b }].  In
     particular [min a b = ∅] if [a = ∅] or [b = ∅]. *)
 
-external max : 'a t -> 'a t -> rw t = "filib_caml_imax"
+external max : 'a t -> 'b t -> rw t = "filib_caml_imax"
 (** [max a b] returns an enclosure of the interval of all maxima of
     [a] and [b], i.e. [max a b = {max{x,y} | x ∈ a, y ∈ b }].  In
     particular [max a b = ∅] if [a = ∅] or [b = ∅]. *)
 
-external dist : 'a t -> 'a t -> float = "filib_caml_dist"
+external dist : 'a t -> 'b t -> float = "filib_caml_dist"
 (** [dist a b] returns an upper bound of the Hausdorff-distance of [a]
     and [b], i.e. [dist a b = max{ abs(inf(a) - inf(b)), abs(sup(a) -
     sup(b)) }].  [dist a b = NaN] when [a = ∅] or [b = ∅]. *)
@@ -196,33 +196,33 @@ external dist : 'a t -> 'a t -> float = "filib_caml_dist"
 external blow : 'a t -> float -> rw t = "filib_caml_blow"
 (** [blow a] return the ε-inflation: [blow a = (1 + eps) · a - eps · a]. *)
 
-external hull : 'a t -> 'a t -> rw t = "filib_caml_hull"
+external hull : 'a t -> 'b t -> rw t = "filib_caml_hull"
 (** [hull a b] the interval hull of [a] and [b]. *)
 
-external disjoint : 'a t -> 'a t -> bool = "filib_caml_disjoint" "noalloc"
+external disjoint : 'a t -> 'b t -> bool = "filib_caml_disjoint" "noalloc"
 (** [disjoint a b] returns [true], iff [a] and [b] are disjoint,
     i.e. [intersect a b = ∅]. *)
 
 external belongs : float -> 'a t -> bool = "filib_caml_in" "noalloc"
 (** [belongs x a] returns [true] iff [x ∈ a]. *)
 
-external interior : 'a t -> 'a t -> bool = "filib_caml_interior" "noalloc"
+external interior : 'a t -> 'b t -> bool = "filib_caml_interior" "noalloc"
 (** [interior a b] returns [true], iff [a] is contained in the
     interior of [b]. *)
 
-external proper_subset : 'a t -> 'a t -> bool = "filib_caml_proper_subset"
+external proper_subset : 'a t -> 'b t -> bool = "filib_caml_proper_subset"
   "noalloc"
 (** [proper_subset a b] returns [true], iff [a] is a proper subset of [b]. *)
 
-external subset : 'a t -> 'a t -> bool = "filib_caml_subset" "noalloc"
+external subset : 'a t -> 'b t -> bool = "filib_caml_subset" "noalloc"
 (** [subset a b] returns [true], iff [a] is a subset of [b]. *)
 
-external proper_superset : 'a t -> 'a t -> bool = "filib_caml_proper_superset"
+external proper_superset : 'a t -> 'b t -> bool = "filib_caml_proper_superset"
   "noalloc"
 (** [proper_superset a b] returns [true], iff [a] is a proper superset
     of [b]. *)
 
-external superset : 'a t -> 'a t -> bool = "filib_caml_superset" "noalloc"
+external superset : 'a t -> 'b t -> bool = "filib_caml_superset" "noalloc"
 (** [superset a b] returns [true], iff [a] is a superset of [b]. *)
 
 
@@ -356,11 +356,11 @@ sig
 
   (** {2 Set Theoretic functions, imperative versions} *)
 
-  external min : rw t -> 'a t -> 'a t -> unit = "filib_caml_do_imin" "noalloc"
+  external min : rw t -> 'a t -> 'b t -> unit = "filib_caml_do_imin" "noalloc"
   (** [min y x1 x2] performs [y <- min x1 x2] (see {!Filib.min}). *)
-  external max : rw t -> 'a t -> 'a t -> unit = "filib_caml_do_imax" "noalloc"
+  external max : rw t -> 'a t -> 'b t -> unit = "filib_caml_do_imax" "noalloc"
   external blow : rw t -> 'a t -> float -> unit = "filib_caml_do_blow" "noalloc"
-  external hull : rw t -> 'a t -> 'a t -> unit = "filib_caml_do_hull" "noalloc"
+  external hull : rw t -> 'a t -> 'b t -> unit = "filib_caml_do_hull" "noalloc"
   external hull_float : rw t -> float -> 'a t -> unit = "filib_caml_do_hull_float"
      "noalloc"
 end

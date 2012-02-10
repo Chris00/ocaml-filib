@@ -46,3 +46,9 @@ I.(let b = interval 4. 8. in
 I.(let h1 = interval 1000. 1500. in
    let h2 = interval 20. 50. in
    sqrt(2. *. h1) +. sqrt(2. *. h2));;
+
+(* Exercise 5.5, p. 41. *)
+I.(let radian d = d /. 180. *. pi in
+   let alpha = hull (radian 59.5) (radian 60.5)
+   and delta = hull (radian 44.5) (radian 45.5) in
+   sin(0.5 *. (delta +. alpha)) /. sin(0.5 *. alpha));;
