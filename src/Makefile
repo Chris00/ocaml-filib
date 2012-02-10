@@ -48,7 +48,7 @@ reinstall: $(INSTALL_FILES)
 	$(MAKE) install
 
 doc:
-	$(OCAMLDOC) -html -d $(DOCDIR) -colorize-code \
+	$(OCAMLDOC) -html -d $(DOCDIR) -charset UTF-8 -colorize-code \
 	  $(OCAML_PACKAGES) $(wildcard *.mli)
 
 include $(ROOT)/Makefile.ocaml
