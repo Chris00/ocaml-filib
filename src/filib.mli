@@ -63,7 +63,7 @@ val of_float : float -> rw t
 
 val interval : float -> float -> rw t
 (** [interval a b] returns a new interval initialized with [[a,b]].
-    FIXME: what if a > b ? *)
+    Interval is [empty] if a > b. *)
 
 val copy : 'a t -> rw t
 (** [copy x] returns a copy the the interval [x]. *)
