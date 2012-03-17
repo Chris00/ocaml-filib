@@ -109,6 +109,7 @@ external min : 'a t -> 'b t -> rw t = "filib_caml_imin"
 external max : 'a t -> 'b t -> rw t = "filib_caml_imax"
 external dist : 'a t -> 'b t -> float = "filib_caml_dist"
 external blow : 'a t -> float -> rw t = "filib_caml_blow"
+external intersect : 'a t -> 'b t -> rw t = "filib_caml_intersect"
 external hull : 'a t -> 'b t -> rw t = "filib_caml_hull"
 external hull_float : float -> 'a t -> rw t = "filib_caml_hull_float"
 (* external hull_float2 : float -> float -> rw t = "filib_caml_hull_float2" *)
@@ -213,6 +214,8 @@ struct
   external min : rw t -> 'a t -> 'b t -> unit = "filib_caml_do_imin" "noalloc"
   external max : rw t -> 'a t -> 'b t -> unit = "filib_caml_do_imax" "noalloc"
   external blow : rw t -> 'a t -> float -> unit = "filib_caml_do_blow" "noalloc"
+  external intersect : rw t -> 'a t -> 'b t -> unit
+    = "filib_caml_do_intersect" "noalloc"
   external hull : rw t -> 'a t -> 'b t -> unit = "filib_caml_do_hull" "noalloc"
   external hull_float : rw t -> float -> 'a t -> unit = "filib_caml_do_hull_float"
      "noalloc"
