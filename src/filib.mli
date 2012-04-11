@@ -63,7 +63,7 @@ val of_float : float -> rw t
 
 val interval : float -> float -> rw t
 (** [interval a b] returns a new interval initialized with [[a,b]].
-    FIXME: what if a > b ? *)
+    Interval is [empty] if a > b. *)
 
 val copy : 'a t -> rw t
 (** [copy x] returns a copy the the interval [x]. *)
@@ -195,6 +195,9 @@ external dist : 'a t -> 'b t -> float = "filib_caml_dist"
 
 external blow : 'a t -> float -> rw t = "filib_caml_blow"
 (** [blow a] return the ε-inflation: [blow a = (1 + eps) · a - eps · a]. *)
+
+external intersect : 'a t -> 'b t -> rw t = "filib_caml_intersect"
+(** [intersect a b] the intersection of [a] and [b]. *)
 
 external hull : 'a t -> 'b t -> rw t = "filib_caml_hull"
 (** [hull a b] the interval hull of [a] and [b]. *)
@@ -360,6 +363,8 @@ sig
   (** [min y x1 x2] performs [y <- min x1 x2] (see {!Filib.min}). *)
   external max : rw t -> 'a t -> 'b t -> unit = "filib_caml_do_imax" "noalloc"
   external blow : rw t -> 'a t -> float -> unit = "filib_caml_do_blow" "noalloc"
+  external intersect : rw t -> 'a t -> 'b t -> unit
+    = "filib_caml_do_intersect" "noalloc"
   external hull : rw t -> 'a t -> 'b t -> unit = "filib_caml_do_hull" "noalloc"
   external hull_float : rw t -> float -> 'a t -> unit = "filib_caml_do_hull_float"
      "noalloc"

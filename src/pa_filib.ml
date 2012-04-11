@@ -30,7 +30,7 @@ let filib_do = Macro.Module_longident.of_string "Filib.Do"
 
 let bin_rels = [ "="; "<>"; "<"; "<="; ">"; ">="]
 let bin_ops_infix = [ "+."; "-."; "*."; "/."; "**"]
-let bin_ops_prefix = [ "min"; "max"; "hull"; "interval" ]
+let bin_ops_prefix = [ "min"; "max"; "intersect"; "hull"; "interval" ]
 let bin_ops = bin_ops_infix @ bin_ops_prefix
 
 let unary_ops_float = [ (* unary operators that return a float *)
