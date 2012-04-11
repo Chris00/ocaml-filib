@@ -296,8 +296,12 @@ let t = Var.setup empty
 
 (** Evaluate [e] a single time, possibly putting it in a variable [v]
     of [Var] and execute [f v] -- typically to generate code for an
-    expression depending on [e]. *)
-let rec use_var_for ?once e f =
+    expression depending on [e].
+
+    @param protect if true, the variable must be allocated just before the
+    expression, typically because it will hold its return value which
+    can be kept in memory (and the expression may be in a loop). *)
+let rec use_var_for ?(protect=false) e f =
   match e with
   | Float(_loc, x) -> f (const_interval _loc x)
   | Var(_loc, v) -> f <:expr< $lid:v$ >> (* use the var *)
@@ -306,12 +310,18 @@ let rec use_var_for ?once e f =
     f (use_var_for e (fun e -> <:expr< $qualify_lid op filib _loc$ $e$ >>))
   | _ ->
     let _loc = loc_of_expr e in
-    Var.use ?once (fun v ->
-      let code_f = f <:expr< $lid:v$ >> in
+    if protect then
+      let v = new_lid() in
       (* [v] is a fresh temporary var, it contains no important value
          and is not used in [e], so one can use it in the computations
          before setting its value. *)
-      <:expr< $set v e ~reuse_var:true$;  $code_f$ >>)
+      let code_f = f <:expr< $lid:v$ >> in
+      <:expr< let $lid:v$ = Filib.empty() in
+              $set v e ~reuse_var:true$;  $code_f$ >>
+    else
+      Var.use (fun v ->
+               let code_f = f <:expr< $lid:v$ >> in
+               <:expr< $set v e ~reuse_var:true$;  $code_f$ >>)
 
 (** @return the code to do [res <- e]. *)
 and set ?(reuse_var=false) res e =
@@ -431,12 +441,14 @@ let specialize tr expr =
     set r (parse_expr tr e) ~reuse_var:false
   (* Unary ops *)
   | <:expr< $lid:f$ $e$ >> when List.mem f unary_ops ->
-    (* The temporary var will hold the final value of the expression *)
-    use_var_for ~once:true (Op1(_loc, f, parse_expr tr e)) (fun e -> e)
+    (* The temporary var will hold the final value of the expression.
+       It should be allocated at just before the exper (the return value may
+       be hold in data-structures). *)
+    use_var_for (Op1(_loc, f, parse_expr tr e)) ~protect:true  (fun e -> e)
   (* binary operators (+, ...) *)
   | <:expr< $lid:f$ $e1$ $e2$ >> when List.mem f bin_ops ->
-    use_var_for ~once:true (Op2(_loc, f, parse_expr tr e1, parse_expr tr e2))
-      (fun e -> e)
+    use_var_for (Op2(_loc, f, parse_expr tr e1, parse_expr tr e2))
+                ~protect:true (fun e -> e)
   (* binary relations (<, ...) *)
   | <:expr< $lid:f$ $e1$ $e2$ >> when List.mem f bin_rels ->
     (* FIXME: do we allow a configurable policy ? *)
