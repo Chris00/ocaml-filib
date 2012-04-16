@@ -5,7 +5,7 @@ SRC = $(ROOT)/src
 PA_DO = $(shell $(OCAMLFIND) query pa_do)/pa_do.cmo
 PP = camlp4o $(PA_DO) nums.cma $(SRC)/pa_filib.cmo
 SOURCES = $(wildcard *.ml *.cpp)
-OCAMLC_FLAGS += -verbose
+OCAMLC_FLAGS += -verbose -annot
 #OCAMLOPT_FLAGS += -syntax camlp4o
 
 .PHONY: all byte native

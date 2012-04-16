@@ -46,7 +46,7 @@ let unary_ops = "~-." :: unary_ops_ascii
 
 let open_for = [
   "empty"; "entire"; "zero"; "one"; "pi"; "infinity"; "neg_infinity";
-  "of_float"; "interval"; "copy";
+  "interval"; "copy";
   "to_string"; "print"; "pretty_print";
   "is_empty"; "is_point"; "is_infinite" ]
   @ bin_ops_prefix @ unary_ops_ascii
@@ -334,15 +334,25 @@ and set_with_result res e =
           will be converted to the smaller interval containing it." in
     let x = exact_representation locx x err_msg in
     <:expr< Filib.Do.interval $lid:res$ $x$ $x$ >>
+  | Op1(_loc, "~-.", e) ->
+    use_var_for e (fun e -> <:expr< Filib.Do.neg $lid:res$ $e$ >>)
+  | Op1(_loc, "of_float", Unknown e) ->
+    let v = new_lid() in
+    <:expr< let $lid:v$ = $e$ in
+            Filib.Do.interval $lid:res$ $lid:v$ $lid:v$ >>
+  | Op1(_loc, "of_float", Op1(loc_op, op, e))
+      when List.mem op unary_ops_float ->
+    let v = new_lid() in
+    use_var_for e (fun e -> <:expr<
+                           let $lid:v$ = $qualify_lid op filib loc_op$ $e$ in
+                           Filib.Do.interval $lid:res$ $lid:v$ $lid:v$ >>)
+  | Op1(_loc, "of_float", _) ->
+    let msg = "Do not understand that the argument of 'of_float' \
+               is indeed a float." in
+    raise _loc (Stream.Error msg)
   | Op1(_loc, lid, e) ->
-    (match lid with
-    | "~-." ->
-      use_var_for e (fun e -> <:expr< Filib.Do.neg $lid:res$ $e$ >>)
-    | "of_float" ->
-      use_var_for e (fun e -> <:expr< Filib.Do.interval $lid:res$ $e$ $e$ >>)
-    | _ ->
-      let op = qualify_lid lid filib_do _loc in
-      use_var_for e (fun e -> <:expr< $op$ $lid:res$ $e$ >>))
+    let op = qualify_lid lid filib_do _loc in
+    use_var_for e (fun e -> <:expr< $op$ $lid:res$ $e$ >>)
 
   (* Specialized functions for +,-,*,/ on literals *)
   | Op2(_loc, "+.", e, Float(locx, x)) | Op2(_loc, "+.", Float(locx, x), e)
