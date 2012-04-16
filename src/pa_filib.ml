@@ -323,6 +323,26 @@ let rec use_var_for ?(protect=false) e f =
                let code_f = f <:expr< $lid:v$ >> in
                <:expr< $set v e ~reuse_var:true$;  $code_f$ >>)
 
+(** [e] is supposed to be a float expression. *)
+and use_var_for_float e f_loc f =
+  match e with
+  | Unknown e ->
+    let v = new_lid() in
+    let code_f = let _loc = Ast.loc_of_expr e in f <:expr< $lid:v$ >> in
+    <:expr@f_loc< let $lid:v$ = $e$ in $code_f$ >>
+  | Var(_loc, v) ->
+    f <:expr< $lid:v$ >> (* use the var *)
+  | Op1(_loc, op, e) when List.mem op unary_ops_float ->
+    let v = new_lid() in
+    let code_f = let _loc = loc_of_expr e in f <:expr< $lid:v$ >> in
+    use_var_for e (fun e -> <:expr@f_loc<
+                           let $lid:v$ = $qualify_lid op filib _loc$ $e$
+                           in $code_f$ >>)
+  | _ ->
+    let msg = "Do not understand that expression is indeed a float \
+               given the Filib overloading." in
+    raise (loc_of_expr e) (Stream.Error msg)
+
 (** @return the code to do [res <- e]. *)
 and set ?(reuse_var=false) res e =
   if reuse_var then Var.add res (fun () -> set_with_result res e)
@@ -336,20 +356,9 @@ and set_with_result res e =
     <:expr< Filib.Do.interval $lid:res$ $x$ $x$ >>
   | Op1(_loc, "~-.", e) ->
     use_var_for e (fun e -> <:expr< Filib.Do.neg $lid:res$ $e$ >>)
-  | Op1(_loc, "of_float", Unknown e) ->
-    let v = new_lid() in
-    <:expr< let $lid:v$ = $e$ in
-            Filib.Do.interval $lid:res$ $lid:v$ $lid:v$ >>
-  | Op1(_loc, "of_float", Op1(loc_op, op, e))
-      when List.mem op unary_ops_float ->
-    let v = new_lid() in
-    use_var_for e (fun e -> <:expr<
-                           let $lid:v$ = $qualify_lid op filib loc_op$ $e$ in
-                           Filib.Do.interval $lid:res$ $lid:v$ $lid:v$ >>)
-  | Op1(_loc, "of_float", _) ->
-    let msg = "Do not understand that the argument of 'of_float' \
-               is indeed a float." in
-    raise _loc (Stream.Error msg)
+  | Op1(_loc, "of_float", e) ->
+    use_var_for_float e _loc
+                      (fun e -> <:expr< Filib.Do.interval $lid:res$ $e$ $e$ >>)
   | Op1(_loc, lid, e) ->
     let op = qualify_lid lid filib_do _loc in
     use_var_for e (fun e -> <:expr< $op$ $lid:res$ $e$ >>)
@@ -397,6 +406,9 @@ and set_with_result res e =
     let x = exact_representation locx x err_msg in
     let y = exact_representation locy y err_msg in
     <:expr< Filib.Do.interval $lid:res$ $x$ $y$ >>
+  | Op2(_loc, "interval", x, y) ->
+    let interval x y = <:expr< Filib.Do.interval $lid:res$ $x$ $y$ >> in
+    use_var_for_float x _loc (fun x -> use_var_for_float y _loc (interval x))
 
   (* Binary operations (general case) *)
   | Op2(_loc, op, Var(locv, v), e) ->
